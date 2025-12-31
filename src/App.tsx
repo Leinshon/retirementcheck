@@ -212,10 +212,9 @@ function App() {
     }
   }, [showCommentSection, commentsLoaded, fetchComments])
 
-  // 모달/패널 열릴 때 배경 스크롤 방지
+  // 댓글 모달 열릴 때 배경 스크롤 방지 (AI 패널은 제외 - 작은 플로팅 패널이라 스크롤 잠금 불필요)
   useEffect(() => {
-    const isOpen = showCommentSection || showAskSection
-    if (isOpen) {
+    if (showCommentSection) {
       // 스크롤 위치 저장 후 body 고정
       const scrollY = window.scrollY
       document.body.style.position = 'fixed'
@@ -242,7 +241,7 @@ function App() {
       document.body.style.right = ''
       document.body.style.overflow = ''
     }
-  }, [showCommentSection, showAskSection])
+  }, [showCommentSection])
 
   // 댓글 작성
   const handleSubmitComment = async () => {
@@ -335,18 +334,12 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
     }
   }
 
-  // 스크롤 감지하여 플로팅 버튼 표시 + AI 패널 닫기
+  // 스크롤 감지하여 플로팅 버튼 표시
   useEffect(() => {
-    let lastScrollY = window.scrollY
     const handleScroll = () => {
       const currentScrollY = window.scrollY
       // 예시 보기 섹션이 화면에서 벗어나면 플로팅 버튼 표시
       setShowFloatingButton(currentScrollY > 200)
-      // 스크롤 시 AI 패널 닫기 (50px 이상 스크롤했을 때)
-      if (Math.abs(currentScrollY - lastScrollY) > 50) {
-        setShowAskSection(false)
-        lastScrollY = currentScrollY
-      }
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
