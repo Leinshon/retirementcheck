@@ -143,6 +143,12 @@ function App() {
   const [isLoadingComments, setIsLoadingComments] = useState(false)
   const [commentsLoaded, setCommentsLoaded] = useState(false)
 
+  // AI 질문 관련 상태
+  const [showAskSection, setShowAskSection] = useState(false)
+  const [aiQuestion, setAiQuestion] = useState('')
+  const [aiAnswer, setAiAnswer] = useState('')
+  const [isAskingAi, setIsAskingAi] = useState(false)
+
   // 세션에서 좋아요한 댓글 목록 불러오기
   useEffect(() => {
     const savedLikes = sessionStorage.getItem('liked_comments')
@@ -236,6 +242,43 @@ function App() {
 
   // 표시할 댓글 (최대 15개 또는 전체)
   const displayedComments = showAllComments ? comments : comments.slice(0, 15)
+
+  // AI에게 질문하기
+  const handleAskAi = async () => {
+    if (!aiQuestion.trim() || isAskingAi) return
+
+    setIsAskingAi(true)
+    setAiAnswer('')
+
+    // 현재 재무 상황 컨텍스트 생성
+    const context = `
+나이: ${data.currentAge}세
+결혼여부: ${data.isMarried ? '기혼' : '미혼'}
+월 소득: ${formatCurrency(Number(data.income.replace(/,/g, '')) || 0)}
+${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(Number(data.spouseIncome.replace(/,/g, '')) || 0)}` : ''}
+월 지출: ${formatCurrency(Number(data.expense.replace(/,/g, '')) || 0)}
+목표 은퇴 나이: ${data.targetRetirementAge}세
+목표 은퇴 자산: ${formatCurrency(Number(data.targetRetirementAsset.replace(/,/g, '')) || 0)}
+`.trim()
+
+    try {
+      const response = await fetch('/api/ask-gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: aiQuestion, context }),
+      })
+
+      if (!response.ok) throw new Error('API error')
+
+      const result = await response.json()
+      setAiAnswer(result.answer)
+    } catch (error) {
+      console.error('AI 질문 오류:', error)
+      setAiAnswer('죄송합니다. 답변을 가져오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
+    } finally {
+      setIsAskingAi(false)
+    }
+  }
 
   // 스크롤 감지하여 플로팅 버튼 표시
   useEffect(() => {
@@ -1687,7 +1730,6 @@ function App() {
                         {assessment.status === 'good' && '✓'}
                         {assessment.status === 'moderate' && '△'}
                         {assessment.status === 'warning' && '⚠'}
-                        {assessment.status === 'neutral' && 'ℹ'}
                       </span>
                       <span className="assessment-title">{assessment.title}</span>
                     </div>
@@ -2058,10 +2100,11 @@ function App() {
 
       {/* 투자 배분 추천 */}
       <section className="insight-section">
-        <h2>연간 투자 배분 추천</h2>
+        <h2>연간 투자 배분 추천 {data.isMarried && spouseYearlyIncome > 0 && <span className="couple-badge">부부 합산</span>}</h2>
         <p className="section-description">
           세액공제 혜택을 최대화하면서 자산을 효율적으로 배분하는 방법을 안내합니다.
           연금저축과 IRP 한도를 우선 채운 후 나머지를 일반 투자계좌에 배분합니다.
+          {data.isMarried && spouseYearlyIncome > 0 && ' 부부 각자 세액공제 한도를 활용합니다.'}
         </p>
         <div className="investment-summary">
           <div className="investment-header">
@@ -3642,6 +3685,12 @@ function App() {
           >
             의견 남기기
           </button>
+          <button
+            className="floating-ask-btn"
+            onClick={() => setShowAskSection(!showAskSection)}
+          >
+            궁금한거 확인하기
+          </button>
         </div>
       )}
 
@@ -3712,6 +3761,56 @@ function App() {
                 더보기 ({comments.length - 15}개 더)
               </button>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* AI 질문 섹션 */}
+      {showAskSection && (
+        <div className="comment-section-overlay" onClick={() => setShowAskSection(false)}>
+          <div className="comment-section ask-section" onClick={(e) => e.stopPropagation()}>
+            <div className="comment-header">
+              <h3>궁금한거 확인하기</h3>
+              <button className="close-btn" onClick={() => setShowAskSection(false)}>x</button>
+            </div>
+
+            <p className="ask-description">
+              은퇴 설계, 절세, 연금, 투자에 대해 궁금한 점을 물어보세요.
+              입력한 재무 데이터를 바탕으로 맞춤 답변을 제공합니다.
+            </p>
+
+            <div className="comment-form">
+              <textarea
+                value={aiQuestion}
+                onChange={(e) => setAiQuestion(e.target.value)}
+                placeholder="예: 지금 상황에서 연금저축과 IRP 중 어디에 더 투자해야 할까요?"
+                rows={3}
+              />
+              <div className="comment-actions">
+                <button
+                  className="submit-btn"
+                  onClick={handleAskAi}
+                  disabled={isAskingAi || !aiQuestion.trim()}
+                >
+                  {isAskingAi ? '답변 생성 중...' : '질문하기'}
+                </button>
+              </div>
+            </div>
+
+            {aiAnswer && (
+              <div className="ai-answer">
+                <h4>답변</h4>
+                <div className="ai-answer-content">
+                  {aiAnswer.split('\n').map((line, i) => (
+                    <p key={i}>{line}</p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <p className="ask-disclaimer">
+              * AI 답변은 참고용이며, 정확한 재무 상담은 전문가와 상의하세요.
+            </p>
           </div>
         </div>
       )}

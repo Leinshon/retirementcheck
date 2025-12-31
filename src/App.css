@@ -359,6 +359,82 @@ h1 {
   transform: scale(0.98);
 }
 
+.floating-ask-btn {
+  background: #4361ee;
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(67, 97, 238, 0.5);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .floating-ask-btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+.floating-ask-btn:hover {
+  background: #3730a3;
+}
+
+.floating-ask-btn:active {
+  transform: scale(0.98);
+}
+
+/* AI 질문 섹션 스타일 */
+.ask-section {
+  max-height: 85vh;
+}
+
+.ask-description {
+  color: #64748b;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.ai-answer {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.ai-answer h4 {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+
+.ai-answer-content {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #374151;
+}
+
+.ai-answer-content p {
+  margin: 0 0 0.5rem 0;
+}
+
+.ai-answer-content p:last-child {
+  margin-bottom: 0;
+}
+
+.ask-disclaimer {
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-align: center;
+}
+
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -904,6 +980,18 @@ h2 {
   font-size: 0.85rem;
   margin: 0.25rem 0 1rem 0;
   line-height: 1.5;
+}
+
+.couple-badge {
+  display: inline-block;
+  background: #4361ee;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  margin-left: 0.5rem;
+  vertical-align: middle;
 }
 
 .insight-grid {
