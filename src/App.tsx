@@ -175,7 +175,6 @@ function App() {
   const [aiQuestion, setAiQuestion] = useState('')
   const [aiAnswer, setAiAnswer] = useState('')
   const [isAskingAi, setIsAskingAi] = useState(false)
-  const [showMobileButtons, setShowMobileButtons] = useState(true) // 모바일 버튼 숨기기/보이기
   const [currentSection, setCurrentSection] = useState('') // 현재 보이는 섹션
 
   // 세션에서 좋아요한 댓글 목록 불러오기
@@ -206,20 +205,44 @@ function App() {
     fetchComments()
   }, [fetchComments])
 
-  // 댓글 섹션 열릴 때 배경 스크롤 방지 + 캐시 없으면 로딩
+  // 댓글 섹션 열릴 때 캐시 없으면 로딩
   useEffect(() => {
-    if (showCommentSection) {
-      if (!commentsLoaded) {
-        fetchComments(true)
-      }
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
-    return () => {
-      document.body.style.overflow = ''
+    if (showCommentSection && !commentsLoaded) {
+      fetchComments(true)
     }
   }, [showCommentSection, commentsLoaded, fetchComments])
+
+  // 모달/패널 열릴 때 배경 스크롤 방지
+  useEffect(() => {
+    const isOpen = showCommentSection || showAskSection
+    if (isOpen) {
+      // 스크롤 위치 저장 후 body 고정
+      const scrollY = window.scrollY
+      document.body.style.position = 'fixed'
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.left = '0'
+      document.body.style.right = '0'
+      document.body.style.overflow = 'hidden'
+    } else {
+      // 스크롤 위치 복원
+      const scrollY = document.body.style.top
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.left = ''
+      document.body.style.right = ''
+      document.body.style.overflow = ''
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1)
+      }
+    }
+    return () => {
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.left = ''
+      document.body.style.right = ''
+      document.body.style.overflow = ''
+    }
+  }, [showCommentSection, showAskSection])
 
   // 댓글 작성
   const handleSubmitComment = async () => {
@@ -3756,22 +3779,13 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
         </div>
       </section>
 
-      {/* 플로팅 버튼 - 오른쪽 (데스크톱: 오른쪽 상단, 모바일: 오른쪽 하단) */}
-      {showFloatingButton && (
-        <div className="floating-buttons-right">
-          {/* 모바일 토글 버튼 */}
-          <button
-            className="floating-toggle-btn mobile-only"
-            onClick={() => setShowMobileButtons(!showMobileButtons)}
-            aria-label={showMobileButtons ? '버튼 숨기기' : '버튼 보이기'}
-          >
-            {showMobileButtons ? '−' : '+'}
-          </button>
-
-          {/* 실제 버튼들 (모바일에서는 토글로 숨기기/보이기) */}
-          <div className={`floating-buttons-content ${showMobileButtons ? 'show' : 'hide'}`}>
+      {/* 스크롤 시 나타나는 헤더 */}
+      <header className={`scroll-header ${showFloatingButton ? 'visible' : ''}`}>
+        <div className="scroll-header-content">
+          <span className="scroll-header-title">은퇴 준비 진단 & 가이드</span>
+          <div className="scroll-header-buttons">
             <button
-              className="floating-my-data-btn"
+              className="header-my-data-btn"
               onClick={() => {
                 setData(initialData)
                 setIsInputExpanded(true)
@@ -3782,16 +3796,15 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
             >
               내 데이터 넣어보기
             </button>
-
             <button
-              className="floating-comment-btn"
+              className="header-comment-btn"
               onClick={() => setShowCommentSection(!showCommentSection)}
             >
               의견 남기기
             </button>
           </div>
         </div>
-      )}
+      </header>
 
       {/* AI 질문 패널 - 왼쪽 하단 (모바일), 오른쪽 하단 (데스크톱) */}
       <div className={`floating-ask-panel ${showAskSection ? 'open' : ''}`}>
