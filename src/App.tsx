@@ -775,7 +775,7 @@ function App() {
     <div className="app">
       <h1>은퇴 준비 진단&가이드</h1>
       <p className="app-disclaimer">
-        이 도구는 개인적인 공부와 조사를 바탕으로 만들었습니다.
+        이 도구는 개인적인 공부와 조사를 바탕으로 만들었습니다. 데스크탑에서 최적화되어있으니 되도록이면 데스크탑에서 확인해주세요. 
         정확하지 않을 수 있으니 <strong>참고용으로만</strong> 활용해 주세요.
         틀린 내용이나 추가 의견이 있다면 <button className="disclaimer-feedback-btn" onClick={() => setShowCommentSection(true)}>의견 남기기</button>를 이용해주세요.
       </p>
