@@ -873,6 +873,36 @@ h2 {
   color: #fff;
 }
 
+/* 주거 형태 선택 */
+.housing-type-selector {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.housing-type-btn {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  border: 2px solid #e8e8e8;
+  border-radius: 8px;
+  background: #fff;
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.housing-type-btn:hover {
+  border-color: #4361ee;
+  color: #4361ee;
+}
+
+.housing-type-btn.active {
+  border-color: #4361ee;
+  background: #4361ee;
+  color: #fff;
+}
+
 .portfolio-content {
   background: #fff;
   border-radius: 10px;

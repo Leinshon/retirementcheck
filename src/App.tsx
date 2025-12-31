@@ -22,11 +22,15 @@ interface FinancialData {
   expense: string
 
   // 부동산
-  realEstate: string
+  housingType: 'own' | 'jeonse' | 'rent'  // 자가/전세/월세
+  realEstate: string           // 자가: 부동산 시세
   hasMortgage: boolean
   mortgageAmount: string
+  jeonseDeposit: string        // 전세 보증금
   hasJeonseDebt: boolean
   jeonseDebtAmount: string
+  monthlyRent: string          // 월세
+  rentDeposit: string          // 월세 보증금
 
   // 금융자산
   savings: string          // 예적금
@@ -51,11 +55,15 @@ const initialData: FinancialData = {
   income: '',
   spouseIncome: '',
   expense: '',
+  housingType: 'own',
   realEstate: '',
   hasMortgage: false,
   mortgageAmount: '',
+  jeonseDeposit: '',
   hasJeonseDebt: false,
   jeonseDebtAmount: '',
+  monthlyRent: '',
+  rentDeposit: '',
   savings: '',
   stocks: '',
   otherFinancialAsset: '',
@@ -76,8 +84,13 @@ function App() {
 
   const handleChange = (field: keyof FinancialData, value: string | boolean) => {
     if (typeof value === 'string') {
-      const numericValue = value.replace(/[^0-9]/g, '')
-      setData(prev => ({ ...prev, [field]: numericValue }))
+      // housingType은 그대로 저장
+      if (field === 'housingType') {
+        setData(prev => ({ ...prev, [field]: value as 'own' | 'jeonse' | 'rent' }))
+      } else {
+        const numericValue = value.replace(/[^0-9]/g, '')
+        setData(prev => ({ ...prev, [field]: numericValue }))
+      }
     } else {
       setData(prev => ({ ...prev, [field]: value }))
     }
@@ -602,80 +615,168 @@ function App() {
 
       {/* 부동산 */}
       <section className="input-section">
-        <h2>부동산</h2>
-        <div className="input-grid">
-          <div className="input-group">
-            <label>부동산 자산</label>
-            <div className="input-wrapper">
-              <input
-                type="text"
-                value={formatNumber(data.realEstate)}
-                onChange={(e) => handleChange('realEstate', e.target.value)}
-                placeholder="0"
-              />
-              <span className="currency">만원</span>
+        <h2>주거</h2>
+        <div className="input-group">
+          <label>주거 형태</label>
+          <div className="housing-type-selector">
+            <button
+              type="button"
+              className={`housing-type-btn ${data.housingType === 'own' ? 'active' : ''}`}
+              onClick={() => handleChange('housingType', 'own')}
+            >
+              자가
+            </button>
+            <button
+              type="button"
+              className={`housing-type-btn ${data.housingType === 'jeonse' ? 'active' : ''}`}
+              onClick={() => handleChange('housingType', 'jeonse')}
+            >
+              전세
+            </button>
+            <button
+              type="button"
+              className={`housing-type-btn ${data.housingType === 'rent' ? 'active' : ''}`}
+              onClick={() => handleChange('housingType', 'rent')}
+            >
+              월세
+            </button>
+          </div>
+        </div>
+
+        {/* 자가 */}
+        {data.housingType === 'own' && (
+          <>
+            <div className="input-grid">
+              <div className="input-group">
+                <label>부동산 시세</label>
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    value={formatNumber(data.realEstate)}
+                    onChange={(e) => handleChange('realEstate', e.target.value)}
+                    placeholder="0"
+                  />
+                  <span className="currency">만원</span>
+                </div>
+                {formatEokHelper(data.realEstate) && (
+                  <span className="eok-helper">{formatEokHelper(data.realEstate)}</span>
+                )}
+              </div>
             </div>
-            {formatEokHelper(data.realEstate) && (
-              <span className="eok-helper">{formatEokHelper(data.realEstate)}</span>
-            )}
-          </div>
-        </div>
+            <div className="debt-section">
+              <div className="checkbox-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={data.hasMortgage}
+                    onChange={(e) => handleChange('hasMortgage', e.target.checked)}
+                  />
+                  주택담보대출 있음
+                </label>
+                {data.hasMortgage && (
+                  <>
+                    <div className="input-wrapper inline">
+                      <input
+                        type="text"
+                        value={formatNumber(data.mortgageAmount)}
+                        onChange={(e) => handleChange('mortgageAmount', e.target.value)}
+                        placeholder="0"
+                      />
+                      <span className="currency">만원</span>
+                    </div>
+                    {formatEokHelper(data.mortgageAmount) && (
+                      <span className="eok-helper">{formatEokHelper(data.mortgageAmount)}</span>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </>
+        )}
 
-        <div className="debt-section">
-          <div className="checkbox-group">
-            <label>
-              <input
-                type="checkbox"
-                checked={data.hasMortgage}
-                onChange={(e) => handleChange('hasMortgage', e.target.checked)}
-              />
-              주택담보대출 있음
-            </label>
-            {data.hasMortgage && (
-              <>
-                <div className="input-wrapper inline">
+        {/* 전세 */}
+        {data.housingType === 'jeonse' && (
+          <>
+            <div className="input-grid">
+              <div className="input-group">
+                <label>전세 보증금</label>
+                <div className="input-wrapper">
                   <input
                     type="text"
-                    value={formatNumber(data.mortgageAmount)}
-                    onChange={(e) => handleChange('mortgageAmount', e.target.value)}
+                    value={formatNumber(data.jeonseDeposit)}
+                    onChange={(e) => handleChange('jeonseDeposit', e.target.value)}
                     placeholder="0"
                   />
                   <span className="currency">만원</span>
                 </div>
-                {formatEokHelper(data.mortgageAmount) && (
-                  <span className="eok-helper">{formatEokHelper(data.mortgageAmount)}</span>
+                {formatEokHelper(data.jeonseDeposit) && (
+                  <span className="eok-helper">{formatEokHelper(data.jeonseDeposit)}</span>
                 )}
-              </>
-            )}
-          </div>
-
-          <div className="checkbox-group">
-            <label>
-              <input
-                type="checkbox"
-                checked={data.hasJeonseDebt}
-                onChange={(e) => handleChange('hasJeonseDebt', e.target.checked)}
-              />
-              전세자금대출 있음
-            </label>
-            {data.hasJeonseDebt && (
-              <>
-                <div className="input-wrapper inline">
+              </div>
+            </div>
+            <div className="debt-section">
+              <div className="checkbox-group">
+                <label>
                   <input
-                    type="text"
-                    value={formatNumber(data.jeonseDebtAmount)}
-                    onChange={(e) => handleChange('jeonseDebtAmount', e.target.value)}
-                    placeholder="0"
+                    type="checkbox"
+                    checked={data.hasJeonseDebt}
+                    onChange={(e) => handleChange('hasJeonseDebt', e.target.checked)}
                   />
-                  <span className="currency">만원</span>
-                </div>
-                {formatEokHelper(data.jeonseDebtAmount) && (
-                  <span className="eok-helper">{formatEokHelper(data.jeonseDebtAmount)}</span>
+                  전세자금대출 있음
+                </label>
+                {data.hasJeonseDebt && (
+                  <>
+                    <div className="input-wrapper inline">
+                      <input
+                        type="text"
+                        value={formatNumber(data.jeonseDebtAmount)}
+                        onChange={(e) => handleChange('jeonseDebtAmount', e.target.value)}
+                        placeholder="0"
+                      />
+                      <span className="currency">만원</span>
+                    </div>
+                    {formatEokHelper(data.jeonseDebtAmount) && (
+                      <span className="eok-helper">{formatEokHelper(data.jeonseDebtAmount)}</span>
+                    )}
+                  </>
                 )}
-              </>
-            )}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* 월세 */}
+        {data.housingType === 'rent' && (
+          <div className="input-grid">
+            <div className="input-group">
+              <label>보증금</label>
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  value={formatNumber(data.rentDeposit)}
+                  onChange={(e) => handleChange('rentDeposit', e.target.value)}
+                  placeholder="0"
+                />
+                <span className="currency">만원</span>
+              </div>
+              {formatEokHelper(data.rentDeposit) && (
+                <span className="eok-helper">{formatEokHelper(data.rentDeposit)}</span>
+              )}
+            </div>
+            <div className="input-group">
+              <label>월세</label>
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  value={formatNumber(data.monthlyRent)}
+                  onChange={(e) => handleChange('monthlyRent', e.target.value)}
+                  placeholder="0"
+                />
+                <span className="currency">만원</span>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </section>
 
       {/* 금융자산 */}
@@ -713,7 +814,7 @@ function App() {
             )}
           </div>
           <div className="input-group">
-            <label>기타 금융자산</label>
+            <label>기타 금융자산(암호화폐 등)</label>
             <div className="input-wrapper">
               <input
                 type="text"
