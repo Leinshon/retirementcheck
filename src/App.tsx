@@ -554,31 +554,36 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
   const userAgeGroup = currentAge > 0 ? getAgeGroup(currentAge) : '40대'
   const ageGroupData = householdFinance2025[userAgeGroup]
 
-  // 분위 데이터 추정 (평균/중앙값 기반)
-  const ageGroupPercentiles = estimatePercentiles(
-    ageGroupData.netWorth.mean,
-    ageGroupData.netWorth.median
-  )
+  // 분위 데이터 추정 (연령대별 중앙값 기반, 전 연령대 분포 비율 적용)
+  const ageGroupPercentiles = estimatePercentiles(ageGroupData.netWorth.median)
 
   // 백분위 계산 (분위 데이터 기반으로 선형 보간)
   const calculatePercentile = (value: number): number => {
-    const { p20, p40, p60, p80 } = ageGroupPercentiles
+    const { p10, p20, p30, p40, p60, p70, p80, p90 } = ageGroupPercentiles
     const median = ageGroupData.netWorth.median
 
-    if (value <= p20) {
-      return Math.max(1, Math.round((value / p20) * 20))
+    if (value <= p10) {
+      return Math.max(1, Math.round((value / p10) * 10))
+    } else if (value <= p20) {
+      return 10 + Math.round(((value - p10) / (p20 - p10)) * 10)
+    } else if (value <= p30) {
+      return 20 + Math.round(((value - p20) / (p30 - p20)) * 10)
     } else if (value <= p40) {
-      return 20 + Math.round(((value - p20) / (p40 - p20)) * 20)
+      return 30 + Math.round(((value - p30) / (p40 - p30)) * 10)
     } else if (value <= median) {
       return 40 + Math.round(((value - p40) / (median - p40)) * 10)
     } else if (value <= p60) {
       return 50 + Math.round(((value - median) / (p60 - median)) * 10)
+    } else if (value <= p70) {
+      return 60 + Math.round(((value - p60) / (p70 - p60)) * 10)
     } else if (value <= p80) {
-      return 60 + Math.round(((value - p60) / (p80 - p60)) * 20)
+      return 70 + Math.round(((value - p70) / (p80 - p70)) * 10)
+    } else if (value <= p90) {
+      return 80 + Math.round(((value - p80) / (p90 - p80)) * 10)
     } else {
-      // 80분위 이상
-      const extraRatio = Math.min((value - p80) / p80, 1)
-      return Math.min(99, 80 + Math.round(extraRatio * 19))
+      // 90분위 이상 (상위 10%)
+      const extraRatio = Math.min((value - p90) / p90, 1)
+      return Math.min(99, 90 + Math.round(extraRatio * 9))
     }
   }
 
@@ -1536,20 +1541,28 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
         {currentAge > 0 && netWorth > 0 && (() => {
           // 백분위에 해당하는 순자산 값 계산 (역산)
           const percentileToNetWorth = (percentile: number): number => {
-            const { p20, p40, p60, p80 } = ageGroupPercentiles
+            const { p10, p20, p30, p40, p60, p70, p80, p90 } = ageGroupPercentiles
             const median = ageGroupData.netWorth.median
-            if (percentile <= 20) {
-              return Math.round((percentile / 20) * p20)
+            if (percentile <= 10) {
+              return Math.round((percentile / 10) * p10)
+            } else if (percentile <= 20) {
+              return Math.round(p10 + ((percentile - 10) / 10) * (p20 - p10))
+            } else if (percentile <= 30) {
+              return Math.round(p20 + ((percentile - 20) / 10) * (p30 - p20))
             } else if (percentile <= 40) {
-              return Math.round(p20 + ((percentile - 20) / 20) * (p40 - p20))
+              return Math.round(p30 + ((percentile - 30) / 10) * (p40 - p30))
             } else if (percentile <= 50) {
               return Math.round(p40 + ((percentile - 40) / 10) * (median - p40))
             } else if (percentile <= 60) {
               return Math.round(median + ((percentile - 50) / 10) * (p60 - median))
+            } else if (percentile <= 70) {
+              return Math.round(p60 + ((percentile - 60) / 10) * (p70 - p60))
             } else if (percentile <= 80) {
-              return Math.round(p60 + ((percentile - 60) / 20) * (p80 - p60))
+              return Math.round(p70 + ((percentile - 70) / 10) * (p80 - p70))
+            } else if (percentile <= 90) {
+              return Math.round(p80 + ((percentile - 80) / 10) * (p90 - p80))
             } else {
-              return Math.round(p80 + ((percentile - 80) / 20) * p80)
+              return Math.round(p90 + ((percentile - 90) / 10) * p90)
             }
           }
 
@@ -1628,13 +1641,24 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
                 callbacks: {
                   title: (context: { label: string }[]) => {
                     const percentile = parseInt(context[0].label)
+                    // 0%와 100%는 존재하지 않으므로 1% 미만/이상으로 표시
+                    if (percentile <= 0) {
+                      return `하위 1% 미만`
+                    } else if (percentile >= 100) {
+                      return `상위 1% 미만`
+                    } else if (percentile <= 10) {
+                      return `하위 ${percentile}%`
+                    }
                     return `상위 ${100 - percentile}%`
                   },
                   label: (context: { label: string }) => {
                     const percentile = parseInt(context.label)
                     const netWorthAtPercentile = percentileToNetWorth(percentile)
-                    // 상위 1% 이상(percentile >= 99)은 "~이상"으로 표시
-                    if (percentile >= 99) {
+                    // 하위 10% 이하는 "~이하", 상위 10% 이상은 "~이상"으로 표시
+                    // 0%일 때는 P10 기준으로 이하 표시
+                    if (percentile <= 10) {
+                      return `순자산: ${formatCurrency(netWorthAtPercentile)} 이하`
+                    } else if (percentile >= 90) {
                       return `순자산: ${formatCurrency(netWorthAtPercentile)} 이상`
                     }
                     return `순자산: ${formatCurrency(netWorthAtPercentile)}`
@@ -1659,14 +1683,6 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
                     borderColor: '#fff',
                     borderWidth: 2,
                     radius: 8,
-                  },
-                  medianLine: {
-                    type: 'line' as const,
-                    xMin: 50,
-                    xMax: 50,
-                    borderColor: 'rgba(16, 185, 129, 0.5)',
-                    borderWidth: 1,
-                    borderDash: [4, 4],
                   },
                 },
               },

@@ -118,23 +118,52 @@ export const nationalAverage: AgeGroupStats = {
   financialDebtToSavingsRatio: 68,
 }
 
-// 분위 데이터 추정 (정규분포 가정)
-// 평균/중앙값 비율로 왜도(skewness)를 추정하여 분위값 계산
-export function estimatePercentiles(mean: number, median: number): {
+// 전 연령대 순자산 분위 경계값 (통계청 2025 가계금융복지조사)
+// P10 = 하위 10%, P90 = 상위 10%
+export const netWorthPercentiles = {
+  p10: 1210,
+  p20: 5108,
+  p30: 10296,
+  p40: 16472,
+  p50: 23860,  // 중앙값
+  p60: 33050,
+  p70: 46180,
+  p80: 69380,
+  p90: 110020,
+}
+
+// 전 연령대 중앙값(P50) 대비 각 분위의 비율
+const percentileRatios = {
+  p10: netWorthPercentiles.p10 / netWorthPercentiles.p50,  // 0.0507
+  p20: netWorthPercentiles.p20 / netWorthPercentiles.p50,  // 0.2141
+  p30: netWorthPercentiles.p30 / netWorthPercentiles.p50,  // 0.4315
+  p40: netWorthPercentiles.p40 / netWorthPercentiles.p50,  // 0.6903
+  p60: netWorthPercentiles.p60 / netWorthPercentiles.p50,  // 1.3852
+  p70: netWorthPercentiles.p70 / netWorthPercentiles.p50,  // 1.9355
+  p80: netWorthPercentiles.p80 / netWorthPercentiles.p50,  // 2.9077
+  p90: netWorthPercentiles.p90 / netWorthPercentiles.p50,  // 4.6108
+}
+
+// 연령대별 분위 경계값 추정
+// 전 연령대 분포 비율을 해당 연령대의 중앙값에 적용
+export function estimatePercentiles(median: number): {
+  p10: number
   p20: number
+  p30: number
   p40: number
   p60: number
+  p70: number
   p80: number
+  p90: number
 } {
-  // 자산 데이터는 보통 오른쪽으로 치우친 분포 (mean > median)
-  // 로그정규분포 가정으로 분위수 추정
-  const ratio = mean / median
-
-  // 대략적인 분위값 추정 (경험적 계수)
   return {
-    p20: Math.round(median * 0.3),
-    p40: Math.round(median * 0.7),
-    p60: Math.round(median * 1.3),
-    p80: Math.round(median * 2.0 * ratio / 1.5),
+    p10: Math.round(median * percentileRatios.p10),
+    p20: Math.round(median * percentileRatios.p20),
+    p30: Math.round(median * percentileRatios.p30),
+    p40: Math.round(median * percentileRatios.p40),
+    p60: Math.round(median * percentileRatios.p60),
+    p70: Math.round(median * percentileRatios.p70),
+    p80: Math.round(median * percentileRatios.p80),
+    p90: Math.round(median * percentileRatios.p90),
   }
 }
