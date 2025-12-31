@@ -78,6 +78,25 @@ h1 {
   color: #475569;
 }
 
+.simple-version-link {
+  display: block;
+  text-align: center;
+  color: #4361ee;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  background: #eef2ff;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.simple-version-link:hover {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
 .intro-guide {
   display: flex;
   flex-direction: column;

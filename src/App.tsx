@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -979,8 +980,11 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
       <h1>나의 은퇴 준비현황 진단기</h1>
       <div className="app-intro">
         <p className="intro-notice">
-          은퇴준비 체계적으로 하고 계신가요? <br></br>당신의 상황을 기준으로 계산된 결과를 지금 바로 확인하세요.<br /><strong>참고용</strong>으로만 활용해 주세요.
+          당신의 재무상황을 기준으로 계산된 결과를 지금 바로 확인하세요.<br /><strong>참고용</strong>으로만 활용해 주세요.
         </p>
+        <Link to="/simple" className="simple-version-link">
+          간단 진단 버전 →
+        </Link>
         <div className="intro-features">
           <span>재무현황 요약</span>
           <span>현금흐름 분석</span>
