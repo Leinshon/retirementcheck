@@ -3781,14 +3781,7 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
 
       {/* AI 질문 패널 - 왼쪽 하단 (모바일), 오른쪽 하단 (데스크톱) */}
       <div className={`floating-ask-panel ${showAskSection ? 'open' : ''}`}>
-        <button
-          className="ask-toggle-btn"
-          onClick={() => setShowAskSection(!showAskSection)}
-        >
-          {showAskSection ? 'x' : '?'}
-        </button>
-
-        {/* 섹션 기반 힌트 텍스트 */}
+        {/* 힌트 텍스트 (섹션이 있을 때만 표시) */}
         {!showAskSection && currentSection && sectionNames[currentSection] && (
           <div className="ask-hint-text" onClick={() => setShowAskSection(true)}>
             {sectionNames[currentSection]} 관련해서 궁금한게 있어요
