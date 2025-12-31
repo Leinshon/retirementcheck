@@ -176,6 +176,7 @@ function App() {
   const [aiAnswer, setAiAnswer] = useState('')
   const [isAskingAi, setIsAskingAi] = useState(false)
   const [showMobileButtons, setShowMobileButtons] = useState(true) // 모바일 버튼 숨기기/보이기
+  const [currentSection, setCurrentSection] = useState('') // 현재 보이는 섹션
 
   // 세션에서 좋아요한 댓글 목록 불러오기
   useEffect(() => {
@@ -326,6 +327,46 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // 섹션별 이름 매핑
+  const sectionNames: Record<string, string> = {
+    'section-financial-summary': '재무정보 요약',
+    'section-cashflow': '현금흐름 분석',
+    'section-expense': '지출 분석',
+    'section-retirement-goal': '은퇴 목표 달성',
+    'section-portfolio': '포트폴리오 추천',
+    'section-retirement-cashflow': '은퇴 후 현금흐름',
+    'section-pension-strategy': '연금 인출 전략',
+    'section-tax': '절세 인사이트',
+  }
+
+  // Intersection Observer로 현재 보이는 섹션 추적
+  useEffect(() => {
+    const sectionIds = Object.keys(sectionNames)
+    const observers: IntersectionObserver[] = []
+
+    sectionIds.forEach(id => {
+      const element = document.getElementById(id)
+      if (element) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                setCurrentSection(id)
+              }
+            })
+          },
+          { threshold: 0.3, rootMargin: '-100px 0px -50% 0px' }
+        )
+        observer.observe(element)
+        observers.push(observer)
+      }
+    })
+
+    return () => {
+      observers.forEach(observer => observer.disconnect())
+    }
   }, [])
 
   const handleChange = (field: keyof FinancialData, value: string | boolean) => {
@@ -1415,7 +1456,7 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
       </div>
 
       {/* 인사이트 */}
-      <section className="insight-section">
+      <section id="section-financial-summary" className="insight-section">
         <h2>재무정보 요약</h2>
         <div className="insight-grid">
           <div className="insight-card">
@@ -1790,7 +1831,7 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
       </section>
 
       {/* 현금흐름 분석 */}
-      <section className="insight-section">
+      <section id="section-cashflow" className="insight-section">
         <h2>현금흐름 분석</h2>
         <div className="cashflow-analysis">
           <div className="cashflow-summary">
@@ -1930,7 +1971,7 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
       </section>
 
       {/* 지출 분석 */}
-      <section className="insight-section">
+      <section id="section-expense" className="insight-section">
         <h2>지출 분석</h2>
         <div className="expense-analysis">
           {(() => {
@@ -2377,7 +2418,7 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
       </section>
 
       {/* 은퇴 목표 달성 분석 */}
-      <section className="insight-section">
+      <section id="section-retirement-goal" className="insight-section">
         <h2>은퇴 목표 달성 분석</h2>
         <div className="retirement-analysis">
           <div className="analysis-option">
@@ -2484,7 +2525,7 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
       </section>
 
       {/* 포트폴리오 추천 */}
-      <section className="insight-section">
+      <section id="section-portfolio" className="insight-section">
         <h2>포트폴리오 추천</h2>
         <div className="portfolio-section">
           <div className="style-selector">
@@ -2613,7 +2654,7 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
       </section>
 
       {/* 은퇴 후 현금흐름 분석 */}
-      <section className="insight-section">
+      <section id="section-retirement-cashflow" className="insight-section">
         <h2>은퇴 후 현금흐름 분석</h2>
         <div className="retirement-cashflow">
           {getNum('targetRetirementAge') > 0 && getNum('currentAge') > 0 ? (
@@ -2817,7 +2858,7 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
       </section>
 
       {/* 은퇴 후 연금 인출 전략 */}
-      <section className="insight-section">
+      <section id="section-pension-strategy" className="insight-section">
         <h2>은퇴 후 연금 인출 전략</h2>
         <div className="pension-withdrawal-strategy">
           <div className="tax-strategy-grid">
@@ -3029,7 +3070,7 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
       </section>
 
       {/* 절세 인사이트 */}
-      <section className="insight-section">
+      <section id="section-tax" className="insight-section">
         <h2>절세 인사이트</h2>
         <div className="tax-insight">
           {(() => {
@@ -3747,10 +3788,17 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
           {showAskSection ? 'x' : '?'}
         </button>
 
+        {/* 섹션 기반 힌트 텍스트 */}
+        {!showAskSection && currentSection && sectionNames[currentSection] && (
+          <div className="ask-hint-text" onClick={() => setShowAskSection(true)}>
+            {sectionNames[currentSection]} 관련해서 궁금한게 있어요
+          </div>
+        )}
+
         {showAskSection && (
           <div className="ask-panel-content">
             <div className="ask-panel-header">
-              <span>질문하기</span>
+              <span>{currentSection && sectionNames[currentSection] ? `${sectionNames[currentSection]} 질문하기` : '질문하기'}</span>
               <button className="ask-close-btn" onClick={() => setShowAskSection(false)}>x</button>
             </div>
             <textarea

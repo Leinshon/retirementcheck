@@ -465,6 +465,38 @@ h1 {
   transform: scale(0.95);
 }
 
+/* 섹션 힌트 텍스트 */
+.ask-hint-text {
+  background: white;
+  color: #6366f1;
+  padding: 0.5rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  margin-top: 0.5rem;
+  max-width: 200px;
+  text-align: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.ask-hint-text:hover {
+  background: #f8f7ff;
+}
+
+@media (min-width: 768px) {
+  .ask-hint-text {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    margin-bottom: 0.5rem;
+    margin-top: 0;
+    white-space: nowrap;
+    max-width: none;
+  }
+}
+
 .ask-panel-content {
   background: white;
   border-radius: 12px;
