@@ -278,26 +278,58 @@ h1 {
   background: #3730a3;
 }
 
-/* 플로팅 버튼 */
-.floating-buttons {
+/* 플로팅 버튼 - 오른쪽 */
+.floating-buttons-right {
   position: fixed;
   bottom: 1rem;
   right: 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  align-items: flex-end;
+  gap: 0.5rem;
   z-index: 1000;
   animation: slideUp 0.3s ease;
 }
 
 @media (min-width: 768px) {
-  .floating-buttons {
+  .floating-buttons-right {
     top: 1rem;
     bottom: auto;
     right: 1rem;
     gap: 0.75rem;
     animation: slideIn 0.3s ease;
   }
+}
+
+.floating-buttons-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+@media (max-width: 767px) {
+  .floating-buttons-content.hide {
+    display: none;
+  }
+}
+
+/* 모바일 토글 버튼 */
+.floating-toggle-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #64748b;
+  color: white;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.floating-toggle-btn:hover {
+  background: #475569;
 }
 
 .floating-my-data-btn {
@@ -322,8 +354,7 @@ h1 {
 }
 
 .floating-my-data-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+  background: #3730a3;
 }
 
 .floating-my-data-btn:active {
@@ -352,156 +383,197 @@ h1 {
 }
 
 .floating-comment-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+  background: #059669;
 }
 
 .floating-comment-btn:active {
   transform: scale(0.98);
 }
 
-.floating-ask-btn {
-  background: #4361ee;
-  color: white;
-  border: none;
-  padding: 0.6rem 1rem;
-  border-radius: 25px;
-  cursor: pointer;
-  font-size: 0.8rem;
-  font-weight: 600;
-  box-shadow: 0 4px 15px rgba(67, 97, 238, 0.5);
-  transition: all 0.3s ease;
-  white-space: nowrap;
+/* 모바일 전용 표시/숨기기 */
+.mobile-only {
+  display: block;
 }
 
 @media (min-width: 768px) {
-  .floating-ask-btn {
-    padding: 0.75rem 1.5rem;
-    font-size: 0.9rem;
+  .mobile-only {
+    display: none;
   }
 }
 
-.floating-ask-btn:hover {
-  background: #3730a3;
+/* 데스크톱 전용 표시/숨기기 */
+.desktop-only {
+  display: none;
 }
 
-.floating-ask-btn:active {
-  transform: scale(0.98);
+@media (min-width: 768px) {
+  .desktop-only {
+    display: block;
+  }
 }
 
-/* AI 질문 모달 스타일 */
-.ask-modal {
-  background: white;
-  border-radius: 16px 16px 0 0;
-  width: 100%;
-  max-width: 100%;
-  max-height: 90vh;
+/* AI 질문 플로팅 패널 */
+.floating-ask-panel {
+  position: fixed;
+  z-index: 999;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
+  align-items: flex-start;
 }
 
-@media (min-width: 768px) {
-  .ask-modal {
-    border-radius: 16px;
-    max-width: 600px;
-    max-height: 85vh;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+/* 모바일: 왼쪽 하단 */
+@media (max-width: 767px) {
+  .floating-ask-panel {
+    bottom: 1rem;
+    left: 0.75rem;
+    right: auto;
   }
 }
 
-.ask-modal-header {
+/* 데스크톱: 오른쪽 하단 */
+@media (min-width: 768px) {
+  .floating-ask-panel {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    align-items: flex-end;
+  }
+}
+
+/* AI 토글 버튼 - 원형 */
+.ask-toggle-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+  color: white;
+  border: none;
+  font-size: 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ask-toggle-btn:hover {
+  box-shadow: 0 6px 25px rgba(139, 92, 246, 0.5);
+}
+
+.ask-toggle-btn:active {
+  transform: scale(0.95);
+}
+
+.ask-panel-content {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+/* 모바일: 왼쪽 하단 고정 */
+@media (max-width: 767px) {
+  .ask-panel-content {
+    width: calc(100vw - 1.5rem);
+    max-width: 320px;
+    max-height: 45vh;
+    overflow-y: auto;
+  }
+}
+
+/* 데스크톱: 버튼 위로 펼쳐짐 */
+@media (min-width: 768px) {
+  .ask-panel-content {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    width: 340px;
+    max-height: 450px;
+    overflow-y: auto;
+  }
+}
+
+.ask-panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.25rem;
-  background: #4361ee;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
 }
 
-.ask-modal-header h3 {
-  margin: 0;
-  font-size: 1rem;
+.ask-panel-header span {
+  font-size: 0.875rem;
   font-weight: 600;
-  color: white;
+  color: #374151;
 }
 
 .ask-close-btn {
   background: none;
   border: none;
-  font-size: 1.25rem;
-  color: white;
-  opacity: 0.8;
+  font-size: 1.1rem;
+  color: #94a3b8;
   cursor: pointer;
   padding: 0;
   line-height: 1;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .ask-close-btn:hover {
-  opacity: 1;
+  color: #374151;
 }
 
-.ask-modal-body {
-  padding: 1.25rem;
-  overflow-y: auto;
-  flex: 1;
-}
-
-.ask-description {
-  color: #64748b;
-  font-size: 0.85rem;
-  line-height: 1.5;
-  margin: 0 0 1rem 0;
-}
-
-.ask-input-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.ask-input-wrapper textarea {
+.ask-panel-content textarea {
   width: 100%;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 0.875rem;
-  font-size: 0.9rem;
+  padding: 0.75rem;
+  font-size: 0.875rem;
   font-family: inherit;
   resize: none;
   transition: border-color 0.2s;
   background: #f8fafc;
 }
 
-.ask-input-wrapper textarea:focus {
+.ask-panel-content textarea:focus {
   border-color: #4361ee;
   outline: none;
   background: white;
 }
 
-.ask-input-wrapper textarea::placeholder {
+.ask-panel-content textarea::placeholder {
   color: #94a3b8;
+}
+
+.ask-panel-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .ask-char-count {
   font-size: 0.75rem;
   color: #94a3b8;
-  text-align: right;
-  margin-top: -0.5rem;
 }
 
 .ask-submit-btn {
-  align-self: flex-end;
   background: #4361ee;
   color: white;
   border: none;
-  padding: 0.625rem 1.5rem;
+  padding: 0.5rem 1rem;
   border-radius: 6px;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
@@ -516,8 +588,13 @@ h1 {
   cursor: not-allowed;
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .ask-answer {
-  margin-top: 1.25rem;
+  margin-top: 0.75rem;
   background: #f8fafc;
   border-radius: 8px;
   overflow: hidden;
@@ -534,12 +611,18 @@ h1 {
 }
 
 .ask-answer-content {
-  padding: 1rem;
-  font-size: 0.875rem;
-  line-height: 1.7;
+  padding: 0.75rem;
+  font-size: 0.8rem;
+  line-height: 1.6;
   color: #374151;
-  max-height: 250px;
+  max-height: 150px;
   overflow-y: auto;
+}
+
+@media (min-width: 768px) {
+  .ask-answer-content {
+    max-height: 200px;
+  }
 }
 
 .ask-answer-content p {
@@ -592,14 +675,6 @@ h1 {
 .ask-answer-content h3 { font-size: 0.95rem; }
 .ask-answer-content h4 { font-size: 0.9rem; }
 
-.ask-modal-footer {
-  padding: 0.75rem 1.25rem;
-  background: #f8fafc;
-  border-top: 1px solid #e2e8f0;
-  font-size: 0.7rem;
-  color: #94a3b8;
-  text-align: center;
-}
 
 @keyframes slideIn {
   from {

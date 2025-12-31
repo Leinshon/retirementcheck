@@ -175,6 +175,7 @@ function App() {
   const [aiQuestion, setAiQuestion] = useState('')
   const [aiAnswer, setAiAnswer] = useState('')
   const [isAskingAi, setIsAskingAi] = useState(false)
+  const [showMobileButtons, setShowMobileButtons] = useState(true) // 모바일 버튼 숨기기/보이기
 
   // 세션에서 좋아요한 댓글 목록 불러오기
   useEffect(() => {
@@ -310,11 +311,18 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
     }
   }
 
-  // 스크롤 감지하여 플로팅 버튼 표시
+  // 스크롤 감지하여 플로팅 버튼 표시 + AI 패널 닫기
   useEffect(() => {
+    let lastScrollY = window.scrollY
     const handleScroll = () => {
+      const currentScrollY = window.scrollY
       // 예시 보기 섹션이 화면에서 벗어나면 플로팅 버튼 표시
-      setShowFloatingButton(window.scrollY > 200)
+      setShowFloatingButton(currentScrollY > 200)
+      // 스크롤 시 AI 패널 닫기 (50px 이상 스크롤했을 때)
+      if (Math.abs(currentScrollY - lastScrollY) > 50) {
+        setShowAskSection(false)
+        lastScrollY = currentScrollY
+      }
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
@@ -861,7 +869,7 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
     <div className="app">
       <h1>은퇴 준비 진단 & 가이드</h1>
       <p className="app-disclaimer">
-        통계청 2025 가계금융복지조사 데이터를 기반으로 만든 은퇴 진단 도구입니다.
+        통계청 2025 가계금융복지조사 데이터를 기반으로 개인이 사용하려고 만든 은퇴 진단 도구입니다.
         <strong>참고용</strong>으로만 활용해 주세요.
         틀린 내용이나 의견이 있다면 <button className="disclaimer-feedback-btn" onClick={() => setShowCommentSection(true)}>의견 남기기</button>를 이용해주세요.
       </p>
@@ -3694,35 +3702,91 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
         </div>
       </section>
 
-      {/* 플로팅 버튼 */}
+      {/* 플로팅 버튼 - 오른쪽 (데스크톱: 오른쪽 상단, 모바일: 오른쪽 하단) */}
       {showFloatingButton && (
-        <div className="floating-buttons">
+        <div className="floating-buttons-right">
+          {/* 모바일 토글 버튼 */}
           <button
-            className="floating-my-data-btn"
-            onClick={() => {
-              setData(initialData)
-              setIsInputExpanded(true)
-              setTimeout(() => {
-                document.getElementById('data-input-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-              }, 100)
-            }}
+            className="floating-toggle-btn mobile-only"
+            onClick={() => setShowMobileButtons(!showMobileButtons)}
           >
-            내 재무데이터 입력해보기
+            {showMobileButtons ? 'v' : '^'}
           </button>
-          <button
-            className="floating-ask-btn"
-            onClick={() => setShowAskSection(!showAskSection)}
-          >
-            궁금한거 확인하기
-          </button>
-          <button
-            className="floating-comment-btn"
-            onClick={() => setShowCommentSection(!showCommentSection)}
-          >
-            의견 남기기
-          </button>
+
+          {/* 실제 버튼들 (모바일에서는 토글로 숨기기/보이기) */}
+          <div className={`floating-buttons-content ${showMobileButtons ? 'show' : 'hide'}`}>
+            <button
+              className="floating-my-data-btn"
+              onClick={() => {
+                setData(initialData)
+                setIsInputExpanded(true)
+                setTimeout(() => {
+                  document.getElementById('data-input-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }, 100)
+              }}
+            >
+              내 데이터 넣어보기
+            </button>
+
+            <button
+              className="floating-comment-btn"
+              onClick={() => setShowCommentSection(!showCommentSection)}
+            >
+              의견 남기기
+            </button>
+          </div>
         </div>
       )}
+
+      {/* AI 질문 패널 - 왼쪽 하단 (모바일), 오른쪽 하단 (데스크톱) */}
+      <div className={`floating-ask-panel ${showAskSection ? 'open' : ''}`}>
+        <button
+          className="ask-toggle-btn"
+          onClick={() => setShowAskSection(!showAskSection)}
+        >
+          {showAskSection ? 'x' : '?'}
+        </button>
+
+        {showAskSection && (
+          <div className="ask-panel-content">
+            <div className="ask-panel-header">
+              <span>질문하기</span>
+              <button className="ask-close-btn" onClick={() => setShowAskSection(false)}>x</button>
+            </div>
+            <textarea
+              value={aiQuestion}
+              onChange={(e) => {
+                if (e.target.value.length <= 50) {
+                  setAiQuestion(e.target.value)
+                }
+              }}
+              placeholder="예: 연금저축과 IRP 차이가 뭐야?"
+              rows={2}
+              maxLength={50}
+            />
+            <div className="ask-panel-actions">
+              <span className="ask-char-count">{aiQuestion.length}/50</span>
+              <button
+                className="ask-submit-btn"
+                onClick={handleAskAi}
+                disabled={isAskingAi || !aiQuestion.trim()}
+              >
+                {isAskingAi ? '생성 중...' : '보내기'}
+              </button>
+            </div>
+
+            {aiAnswer && (
+              <div className="ask-answer">
+                <div className="ask-answer-label">AI 답변</div>
+                <div
+                  className="ask-answer-content"
+                  dangerouslySetInnerHTML={{ __html: parseMarkdown(aiAnswer) }}
+                />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* 댓글 섹션 */}
       {showCommentSection && (
@@ -3795,59 +3859,6 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
         </div>
       )}
 
-      {/* AI 질문 섹션 */}
-      {showAskSection && (
-        <div className="comment-section-overlay" onClick={() => setShowAskSection(false)}>
-          <div className="ask-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="ask-modal-header">
-              <h3>궁금한거 물어보기</h3>
-              <button className="ask-close-btn" onClick={() => setShowAskSection(false)}>x</button>
-            </div>
-
-            <div className="ask-modal-body">
-              <p className="ask-description">
-                연금저축, IRP, ISA 등 뭐든 궁금한점에 대해 물어보세요.
-              </p>
-
-              <div className="ask-input-wrapper">
-                <textarea
-                  value={aiQuestion}
-                  onChange={(e) => {
-                    if (e.target.value.length <= 50) {
-                      setAiQuestion(e.target.value)
-                    }
-                  }}
-                  placeholder="예: 연금저축과 IRP 차이가 뭐야?"
-                  rows={2}
-                  maxLength={50}
-                />
-                <div className="ask-char-count">{aiQuestion.length}/50</div>
-                <button
-                  className="ask-submit-btn"
-                  onClick={handleAskAi}
-                  disabled={isAskingAi || !aiQuestion.trim()}
-                >
-                  {isAskingAi ? '생성 중...' : '질문하기'}
-                </button>
-              </div>
-
-              {aiAnswer && (
-                <div className="ask-answer">
-                  <div className="ask-answer-label">답변</div>
-                  <div
-                    className="ask-answer-content"
-                    dangerouslySetInnerHTML={{ __html: parseMarkdown(aiAnswer) }}
-                  />
-                </div>
-              )}
-            </div>
-
-            <div className="ask-modal-footer">
-              AI 답변은 참고용입니다!
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
