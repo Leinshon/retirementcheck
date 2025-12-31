@@ -3831,7 +3831,7 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
 
             {aiAnswer && (
               <div className="ask-answer">
-                <div className="ask-answer-label">AI 답변</div>
+                <div className="ask-answer-label">답변</div>
                 <div
                   className="ask-answer-content"
                   dangerouslySetInnerHTML={{ __html: parseMarkdown(aiAnswer) }}

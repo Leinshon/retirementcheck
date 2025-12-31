@@ -493,8 +493,8 @@ h1 {
 @media (max-width: 767px) {
   .ask-panel-content {
     width: calc(100vw - 1.5rem);
-    max-width: 320px;
-    max-height: 45vh;
+    max-width: 360px;
+    max-height: 55vh;
     overflow-y: auto;
   }
 }
@@ -507,8 +507,8 @@ h1 {
     right: 0;
     margin-top: 0;
     margin-bottom: 0.5rem;
-    width: 340px;
-    max-height: 450px;
+    width: 400px;
+    max-height: 500px;
     overflow-y: auto;
   }
 }
