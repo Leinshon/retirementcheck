@@ -43,9 +43,9 @@ const handler: Handler = async (event) => {
     }
 
     const systemPrompt = `당신은 은퇴 설계 및 재무 상담 전문가입니다.
-사용자의 재무 데이터를 기반으로 친절하고 이해하기 쉽게 답변해주세요.
+입력된 사용자의 재무 데이터를 기반으로 친절하고 이해하기 쉽게 답변해주세요.
 한국의 세금 제도, 연금 제도, 투자 상품에 대해 잘 알고 있습니다.
-답변은 간결하고 실용적으로 해주세요.`
+답변은 반드시 200자 이내로 간결하게 해주세요.`
 
     const userMessage = context
       ? `[사용자 재무 상황]\n${context}\n\n[질문]\n${question}`
@@ -65,7 +65,7 @@ const handler: Handler = async (event) => {
           ],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 1024,
+            maxOutputTokens: 200,
           },
         }),
       }

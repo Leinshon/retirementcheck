@@ -3680,16 +3680,16 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
             내 재무데이터 입력해보기
           </button>
           <button
-            className="floating-comment-btn"
-            onClick={() => setShowCommentSection(!showCommentSection)}
-          >
-            의견 남기기
-          </button>
-          <button
             className="floating-ask-btn"
             onClick={() => setShowAskSection(!showAskSection)}
           >
             궁금한거 확인하기
+          </button>
+          <button
+            className="floating-comment-btn"
+            onClick={() => setShowCommentSection(!showCommentSection)}
+          >
+            의견 남기기
           </button>
         </div>
       )}
@@ -3768,49 +3768,54 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
       {/* AI 질문 섹션 */}
       {showAskSection && (
         <div className="comment-section-overlay" onClick={() => setShowAskSection(false)}>
-          <div className="comment-section ask-section" onClick={(e) => e.stopPropagation()}>
-            <div className="comment-header">
-              <h3>궁금한거 확인하기</h3>
-              <button className="close-btn" onClick={() => setShowAskSection(false)}>x</button>
+          <div className="ask-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="ask-modal-header">
+              <h3>궁금한거 물어보기</h3>
+              <button className="ask-close-btn" onClick={() => setShowAskSection(false)}>x</button>
             </div>
 
-            <p className="ask-description">
-              은퇴 설계, 절세, 연금, 투자에 대해 궁금한 점을 물어보세요.
-              입력한 재무 데이터를 바탕으로 맞춤 답변을 제공합니다.
-            </p>
+            <div className="ask-modal-body">
+              <p className="ask-description">
+                연금저축, IRP, ISA 등 뭐든 궁금한점에 대해 물어보세요.
+              </p>
 
-            <div className="comment-form">
-              <textarea
-                value={aiQuestion}
-                onChange={(e) => setAiQuestion(e.target.value)}
-                placeholder="예: 지금 상황에서 연금저축과 IRP 중 어디에 더 투자해야 할까요?"
-                rows={3}
-              />
-              <div className="comment-actions">
+              <div className="ask-input-wrapper">
+                <textarea
+                  value={aiQuestion}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 50) {
+                      setAiQuestion(e.target.value)
+                    }
+                  }}
+                  placeholder="예: 연금저축과 IRP 차이가 뭐야?"
+                  rows={2}
+                  maxLength={50}
+                />
+                <div className="ask-char-count">{aiQuestion.length}/50</div>
                 <button
-                  className="submit-btn"
+                  className="ask-submit-btn"
                   onClick={handleAskAi}
                   disabled={isAskingAi || !aiQuestion.trim()}
                 >
-                  {isAskingAi ? '답변 생성 중...' : '질문하기'}
+                  {isAskingAi ? '생성 중...' : '질문하기'}
                 </button>
               </div>
+
+              {aiAnswer && (
+                <div className="ask-answer">
+                  <div className="ask-answer-label">AI 답변</div>
+                  <div className="ask-answer-content">
+                    {aiAnswer.split('\n').map((line, i) => (
+                      line.trim() ? <p key={i}>{line}</p> : null
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            {aiAnswer && (
-              <div className="ai-answer">
-                <h4>답변</h4>
-                <div className="ai-answer-content">
-                  {aiAnswer.split('\n').map((line, i) => (
-                    <p key={i}>{line}</p>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <p className="ask-disclaimer">
-              * AI 답변은 참고용이며, 정확한 재무 상담은 전문가와 상의하세요.
-            </p>
+            <div className="ask-modal-footer">
+              AI 답변은 참고용입니다!
+            </div>
           </div>
         </div>
       )}
