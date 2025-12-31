@@ -125,6 +125,7 @@ function App() {
   const [data, setData] = useState<FinancialData>(initialData)
   const [investmentStyle, setInvestmentStyle] = useState<InvestmentStyle>('balanced')
   const [isInputExpanded, setIsInputExpanded] = useState(true)
+  const [isTaxReferenceExpanded, setIsTaxReferenceExpanded] = useState(false)
   const [useFinancialAssetOnly, setUseFinancialAssetOnly] = useState(false)
   const [pensionWithdrawalYears, setPensionWithdrawalYears] = useState(20) // 연금 인출 기간 (년)
   const [showEtfDetails, setShowEtfDetails] = useState(false) // ETF 상세 설명 토글
@@ -139,6 +140,8 @@ function App() {
   const [showAllComments, setShowAllComments] = useState(false)
   const [likedComments, setLikedComments] = useState<Set<string>>(new Set())
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoadingComments, setIsLoadingComments] = useState(false)
+  const [commentsLoaded, setCommentsLoaded] = useState(false)
 
   // 세션에서 좋아요한 댓글 목록 불러오기
   useEffect(() => {
@@ -149,7 +152,8 @@ function App() {
   }, [])
 
   // 댓글 불러오기
-  const fetchComments = useCallback(async () => {
+  const fetchComments = useCallback(async (showLoading = false) => {
+    if (showLoading) setIsLoadingComments(true)
     const { data, error } = await supabase
       .from('comments')
       .select('*')
@@ -157,13 +161,22 @@ function App() {
 
     if (!error && data) {
       setComments(data)
+      setCommentsLoaded(true)
     }
+    if (showLoading) setIsLoadingComments(false)
   }, [])
 
-  // 댓글 섹션 열릴 때 댓글 불러오기 + 배경 스크롤 방지
+  // 앱 로드 시 댓글 미리 불러오기 (백그라운드)
+  useEffect(() => {
+    fetchComments()
+  }, [fetchComments])
+
+  // 댓글 섹션 열릴 때 배경 스크롤 방지 + 캐시 없으면 로딩
   useEffect(() => {
     if (showCommentSection) {
-      fetchComments()
+      if (!commentsLoaded) {
+        fetchComments(true)
+      }
       document.body.style.overflow = 'hidden'
     } else {
       document.body.style.overflow = ''
@@ -171,7 +184,7 @@ function App() {
     return () => {
       document.body.style.overflow = ''
     }
-  }, [showCommentSection, fetchComments])
+  }, [showCommentSection, commentsLoaded, fetchComments])
 
   // 댓글 작성
   const handleSubmitComment = async () => {
@@ -773,11 +786,11 @@ function App() {
 
   return (
     <div className="app">
-      <h1>은퇴 준비 진단&가이드</h1>
+      <h1>은퇴 준비 진단 & 가이드</h1>
       <p className="app-disclaimer">
-        이 도구는 개인적인 공부와 조사를 바탕으로 만들었습니다. 데스크탑에서 최적화되어있으니 되도록이면 데스크탑에서 확인해주세요. 
-        정확하지 않을 수 있으니 <strong>참고용으로만</strong> 활용해 주세요.
-        틀린 내용이나 추가 의견이 있다면 <button className="disclaimer-feedback-btn" onClick={() => setShowCommentSection(true)}>의견 남기기</button>를 이용해주세요.
+        통계청 2025 가계금융복지조사 데이터를 기반으로 만든 은퇴 진단 도구입니다.
+        <strong>참고용</strong>으로만 활용해 주세요.
+        틀린 내용이나 의견이 있다면 <button className="disclaimer-feedback-btn" onClick={() => setShowCommentSection(true)}>의견 남기기</button>를 이용해주세요.
       </p>
 
       {/* 예시 보기 */}
@@ -821,6 +834,9 @@ function App() {
             onClick={() => {
               setData(initialData)
               setIsInputExpanded(true)
+              setTimeout(() => {
+                document.getElementById('data-input-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }, 100)
             }}
           >
             내 재무데이터 입력해보기
@@ -829,7 +845,7 @@ function App() {
       </div>
 
       {/* 데이터 입력 토글 헤더 */}
-      <div className="input-toggle-header" onClick={() => setIsInputExpanded(!isInputExpanded)}>
+      <div id="data-input-section" className="input-toggle-header" onClick={() => setIsInputExpanded(!isInputExpanded)}>
         <h2>데이터 입력</h2>
         <span className={`toggle-icon ${isInputExpanded ? 'expanded' : ''}`}>▼</span>
       </div>
@@ -2719,6 +2735,218 @@ function App() {
         </div>
       </section>
 
+      {/* 은퇴 후 연금 인출 전략 */}
+      <section className="insight-section">
+        <h2>은퇴 후 연금 인출 전략</h2>
+        <div className="pension-withdrawal-strategy">
+          <div className="tax-strategy-grid">
+            <div className="tax-strategy-item">
+              <span className="strategy-title">연금소득세 구조</span>
+              <div className="strategy-content">
+                <div className="strategy-table">
+                  <div className="strategy-row header">
+                    <span>수령 나이</span>
+                    <span>연금소득세율</span>
+                  </div>
+                  <div className="strategy-row">
+                    <span>55~69세</span>
+                    <span>5.5%</span>
+                  </div>
+                  <div className="strategy-row">
+                    <span>70~79세</span>
+                    <span>4.4%</span>
+                  </div>
+                  <div className="strategy-row">
+                    <span>80세 이상</span>
+                    <span>3.3%</span>
+                  </div>
+                </div>
+                <p className="strategy-note">* 일시금 수령 시 기타소득세 16.5% 부과</p>
+              </div>
+            </div>
+
+            <div className="tax-strategy-item">
+              <span className="strategy-title">최적 인출 전략</span>
+              <div className="strategy-content">
+                <ul className="strategy-list">
+                  <li><strong>연 1,500만원 이하:</strong> 분리과세 선택으로 종합소득세 회피</li>
+                  <li><strong>연 1,500만원 초과:</strong> 종합과세 대상, 다른 소득과 합산</li>
+                  <li><strong>국민연금:</strong> 연금소득으로 종합과세 대상 (연 350만원 초과분)</li>
+                  <li><strong>퇴직연금 → 개인연금:</strong> 순서대로 인출 시 세금 최적화</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="tax-strategy-item full-width">
+              <span className="strategy-title">맞춤 인출 시뮬레이션</span>
+              <div className="strategy-content">
+                {(() => {
+                  const nationalPensionMonthly = getNum('nationalPension')
+                  const nationalPensionYearly = nationalPensionMonthly * 12
+
+                  // 은퇴시점 예상 적립액 계산 (은퇴 후 현금흐름 분석과 동일한 로직)
+                  const annualReturn = currentPortfolio.historicalReturn / 100
+                  const years = yearsToRetirement > 0 ? yearsToRetirement : 0
+                  const yearlyDCContribution = Math.round(yearlyIncome / 12)
+
+                  const calculateFutureValue = (pv: number, pmt: number, r: number, n: number) => {
+                    if (n <= 0) return pv
+                    if (r === 0) return pv + pmt * n
+                    const factor = Math.pow(1 + r, n)
+                    return pv * factor + pmt * (factor - 1) / r
+                  }
+
+                  // 퇴직연금 은퇴시점 예상 적립액
+                  const retirementPensionFV = calculateFutureValue(
+                    getNum('retirementPension'),
+                    yearlyDCContribution,
+                    annualReturn,
+                    years
+                  )
+
+                  // 개인연금 은퇴시점 예상 적립액
+                  const privatePensionFV = calculateFutureValue(
+                    getNum('privatePension'),
+                    investmentAllocation.pensionFund,
+                    annualReturn,
+                    years
+                  )
+
+                  // 사적연금 은퇴시점 총 예상 적립액 (퇴직연금 + 개인연금)
+                  const privatePensionTotal = Math.round(retirementPensionFV + privatePensionFV)
+
+                  // 인출 기간에 따른 연간/월간 인출액 계산
+                  const yearlyWithdrawal = privatePensionTotal > 0 ? Math.round(privatePensionTotal / pensionWithdrawalYears) : 0
+                  const monthlyWithdrawal = Math.round(yearlyWithdrawal / 12)
+
+                  // 분리과세 한도 초과 여부
+                  const isOverLimit = yearlyWithdrawal > 1500
+                  const overLimitAmount = Math.max(0, yearlyWithdrawal - 1500)
+
+                  // 권장 인출 기간 (분리과세 유지)
+                  const recommendedYears = privatePensionTotal > 0 ? Math.ceil(privatePensionTotal / 1500) : 0
+
+                  // 연금소득세 계산 (나이에 따른 세율)
+                  const retirementAge = getNum('targetRetirementAge') || 60
+                  // 55-69세: 5.5%, 70-79세: 4.4%, 80세 이상: 3.3%
+                  const getPensionTaxRate = (age: number) => {
+                    if (age >= 80) return 3.3
+                    if (age >= 70) return 4.4
+                    return 5.5
+                  }
+
+                  // 인출 기간 동안의 평균 세율 (은퇴 시점부터 시작)
+                  const avgTaxRate = getPensionTaxRate(retirementAge + Math.floor(pensionWithdrawalYears / 2))
+
+                  // 분리과세 시 세액 (한도 내)
+                  const separateTaxableAmount = Math.min(yearlyWithdrawal, 1500)
+                  const separateTax = Math.round(separateTaxableAmount * (avgTaxRate / 100))
+
+                  // 종합과세 시 추가 세액 (한도 초과분, 가정: 15% 세율)
+                  const comprehensiveTax = Math.round(overLimitAmount * 0.15)
+
+                  // 연간 총 예상 세액
+                  const totalAnnualTax = separateTax + comprehensiveTax
+
+                  return (
+                    <div className="simulation-result">
+                      <div className="simulation-row">
+                        <span className="sim-label">예상 국민연금 (연간)</span>
+                        <span className="sim-value">{formatCurrency(nationalPensionYearly)}</span>
+                      </div>
+                      <div className="simulation-row">
+                        <span className="sim-label">사적연금 은퇴시점 예상 적립액</span>
+                        <span className="sim-value">{formatCurrency(privatePensionTotal)}</span>
+                      </div>
+                      <div className="simulation-row">
+                        <span className="sim-label">권장 인출 기간 (분리과세 유지)</span>
+                        <span className={`sim-value ${recommendedYears <= 25 ? 'positive' : 'negative'}`}>
+                          최소 {recommendedYears}년
+                        </span>
+                      </div>
+
+                      {privatePensionTotal > 0 && (
+                        <>
+                          <div className="withdrawal-slider-section">
+                            <div className="slider-header">
+                              <span className="slider-label">인출 기간 설정</span>
+                              <span className="slider-value">{pensionWithdrawalYears}년</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="10"
+                              max="40"
+                              value={pensionWithdrawalYears}
+                              onChange={(e) => setPensionWithdrawalYears(Number(e.target.value))}
+                              className="withdrawal-slider"
+                            />
+                            <div className="slider-range">
+                              <span>10년</span>
+                              <span>40년</span>
+                            </div>
+                          </div>
+
+                          <div className="withdrawal-result">
+                            <div className="result-row">
+                              <span>사적연금 연간 인출액</span>
+                              <span className={isOverLimit ? 'warning' : 'good'}>{formatCurrency(yearlyWithdrawal)}</span>
+                            </div>
+                            <div className="result-row">
+                              <span>사적연금 월 인출액</span>
+                              <span>{formatCurrency(monthlyWithdrawal)}</span>
+                            </div>
+                            <div className="result-row">
+                              <span>분리과세 한도</span>
+                              <span>연 1,500만원</span>
+                            </div>
+                            {isOverLimit && (
+                              <div className="result-row warning-row">
+                                <span>한도 초과액 (종합과세)</span>
+                                <span className="warning">{formatCurrency(overLimitAmount)}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="tax-estimate">
+                            <div className="tax-estimate-header">
+                              <span>예상 연간 세액</span>
+                              <span className="tax-estimate-total">{formatCurrency(totalAnnualTax)}</span>
+                            </div>
+                            <div className="tax-breakdown">
+                              <div className="tax-item">
+                                <span>분리과세 ({avgTaxRate}%)</span>
+                                <span>{formatCurrency(separateTax)}</span>
+                              </div>
+                              {comprehensiveTax > 0 && (
+                                <div className="tax-item warning">
+                                  <span>종합과세 추가 (약 15%)</span>
+                                  <span>{formatCurrency(comprehensiveTax)}</span>
+                                </div>
+                              )}
+                            </div>
+                            <p className="tax-note-small">
+                              * 분리과세 세율: 55-69세 5.5%, 70-79세 4.4%, 80세+ 3.3%
+                            </p>
+                          </div>
+                        </>
+                      )}
+
+                      <div className="simulation-tip">
+                        <p><strong>국민연금:</strong> 종합과세 대상으로 분리과세 한도(1,500만원)와 무관합니다.</p>
+                        <p><strong>사적연금:</strong> 연 1,500만원 이하 인출 시 분리과세(3.3~5.5%) 선택 가능. 초과 시 종합과세됩니다.</p>
+                        {isOverLimit && (
+                          <p className="tip-warning"><strong>주의:</strong> 현재 설정({pensionWithdrawalYears}년)으로는 분리과세 한도를 초과합니다. 인출 기간을 {recommendedYears}년 이상으로 늘리면 분리과세 혜택을 유지할 수 있습니다.</p>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })()}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* 절세 인사이트 */}
       <section className="insight-section">
         <h2>절세 인사이트</h2>
@@ -2939,8 +3167,14 @@ function App() {
 
                 {/* 세금 관련 참고사항 */}
                 <div className="tax-reference">
-                  <h4>2024년 세제혜택 요약</h4>
-                  <div className="tax-reference-grid">
+                  <div
+                    className="tax-reference-header"
+                    onClick={() => setIsTaxReferenceExpanded(!isTaxReferenceExpanded)}
+                  >
+                    <h4>2024년 세제혜택 요약</h4>
+                    <span className={`toggle-icon ${isTaxReferenceExpanded ? 'expanded' : ''}`}>▼</span>
+                  </div>
+                  <div className={`tax-reference-grid ${isTaxReferenceExpanded ? 'expanded' : 'collapsed'}`}>
                     <div className="tax-reference-item">
                       <span className="tax-ref-title">연금저축</span>
                       <ul>
@@ -2975,216 +3209,6 @@ function App() {
                   <p>* 세액공제율: 총급여 5,500만원 이하 16.5%, 초과 13.2%</p>
                   <p>* 50세 이상은 연금저축 세액공제 한도 200만원 추가 (연 600만원 → 800만원, 3년간)</p>
                   <p>* 개인별 상황에 따라 실제 세금 혜택은 다를 수 있으니, 전문가 상담을 권장합니다</p>
-                </div>
-
-                {/* 은퇴 후 연금 인출 전략 */}
-                <div className="tax-section">
-                  <h4>은퇴 후 연금 인출 전략</h4>
-                  <div className="tax-strategy-grid">
-                    <div className="tax-strategy-item">
-                      <span className="strategy-title">연금소득세 구조</span>
-                      <div className="strategy-content">
-                        <div className="strategy-table">
-                          <div className="strategy-row header">
-                            <span>수령 나이</span>
-                            <span>연금소득세율</span>
-                          </div>
-                          <div className="strategy-row">
-                            <span>55~69세</span>
-                            <span>5.5%</span>
-                          </div>
-                          <div className="strategy-row">
-                            <span>70~79세</span>
-                            <span>4.4%</span>
-                          </div>
-                          <div className="strategy-row">
-                            <span>80세 이상</span>
-                            <span>3.3%</span>
-                          </div>
-                        </div>
-                        <p className="strategy-note">* 일시금 수령 시 기타소득세 16.5% 부과</p>
-                      </div>
-                    </div>
-
-                    <div className="tax-strategy-item">
-                      <span className="strategy-title">최적 인출 전략</span>
-                      <div className="strategy-content">
-                        <ul className="strategy-list">
-                          <li><strong>연 1,500만원 이하:</strong> 분리과세 선택으로 종합소득세 회피</li>
-                          <li><strong>연 1,500만원 초과:</strong> 종합과세 대상, 다른 소득과 합산</li>
-                          <li><strong>국민연금:</strong> 연금소득으로 종합과세 대상 (연 350만원 초과분)</li>
-                          <li><strong>퇴직연금 → 개인연금:</strong> 순서대로 인출 시 세금 최적화</li>
-                        </ul>
-                      </div>
-                    </div>
-
-                    <div className="tax-strategy-item full-width">
-                      <span className="strategy-title">맞춤 인출 시뮬레이션</span>
-                      <div className="strategy-content">
-                        {(() => {
-                          const nationalPensionMonthly = getNum('nationalPension')
-                          const nationalPensionYearly = nationalPensionMonthly * 12
-
-                          // 은퇴시점 예상 적립액 계산 (은퇴 후 현금흐름 분석과 동일한 로직)
-                          const annualReturn = currentPortfolio.historicalReturn / 100
-                          const years = yearsToRetirement > 0 ? yearsToRetirement : 0
-                          const yearlyDCContribution = Math.round(yearlyIncome / 12)
-
-                          const calculateFutureValue = (pv: number, pmt: number, r: number, n: number) => {
-                            if (n <= 0) return pv
-                            if (r === 0) return pv + pmt * n
-                            const factor = Math.pow(1 + r, n)
-                            return pv * factor + pmt * (factor - 1) / r
-                          }
-
-                          // 퇴직연금 은퇴시점 예상 적립액
-                          const retirementPensionFV = calculateFutureValue(
-                            getNum('retirementPension'),
-                            yearlyDCContribution,
-                            annualReturn,
-                            years
-                          )
-
-                          // 개인연금 은퇴시점 예상 적립액
-                          const privatePensionFV = calculateFutureValue(
-                            getNum('privatePension'),
-                            investmentAllocation.pensionFund,
-                            annualReturn,
-                            years
-                          )
-
-                          // 사적연금 은퇴시점 총 예상 적립액 (퇴직연금 + 개인연금)
-                          const privatePensionTotal = Math.round(retirementPensionFV + privatePensionFV)
-
-                          // 인출 기간에 따른 연간/월간 인출액 계산
-                          const yearlyWithdrawal = privatePensionTotal > 0 ? Math.round(privatePensionTotal / pensionWithdrawalYears) : 0
-                          const monthlyWithdrawal = Math.round(yearlyWithdrawal / 12)
-
-                          // 분리과세 한도 초과 여부
-                          const isOverLimit = yearlyWithdrawal > 1500
-                          const overLimitAmount = Math.max(0, yearlyWithdrawal - 1500)
-
-                          // 권장 인출 기간 (분리과세 유지)
-                          const recommendedYears = privatePensionTotal > 0 ? Math.ceil(privatePensionTotal / 1500) : 0
-
-                          // 연금소득세 계산 (나이에 따른 세율)
-                          const retirementAge = getNum('targetRetirementAge') || 60
-                          // 55-69세: 5.5%, 70-79세: 4.4%, 80세 이상: 3.3%
-                          const getPensionTaxRate = (age: number) => {
-                            if (age >= 80) return 3.3
-                            if (age >= 70) return 4.4
-                            return 5.5
-                          }
-
-                          // 인출 기간 동안의 평균 세율 (은퇴 시점부터 시작)
-                          const avgTaxRate = getPensionTaxRate(retirementAge + Math.floor(pensionWithdrawalYears / 2))
-
-                          // 분리과세 시 세액 (한도 내)
-                          const separateTaxableAmount = Math.min(yearlyWithdrawal, 1500)
-                          const separateTax = Math.round(separateTaxableAmount * (avgTaxRate / 100))
-
-                          // 종합과세 시 추가 세액 (한도 초과분, 가정: 15% 세율)
-                          const comprehensiveTax = Math.round(overLimitAmount * 0.15)
-
-                          // 연간 총 예상 세액
-                          const totalAnnualTax = separateTax + comprehensiveTax
-
-                          return (
-                            <div className="simulation-result">
-                              <div className="simulation-row">
-                                <span className="sim-label">예상 국민연금 (연간)</span>
-                                <span className="sim-value">{formatCurrency(nationalPensionYearly)}</span>
-                              </div>
-                              <div className="simulation-row">
-                                <span className="sim-label">사적연금 은퇴시점 예상 적립액</span>
-                                <span className="sim-value">{formatCurrency(privatePensionTotal)}</span>
-                              </div>
-                              <div className="simulation-row">
-                                <span className="sim-label">권장 인출 기간 (분리과세 유지)</span>
-                                <span className={`sim-value ${recommendedYears <= 25 ? 'positive' : 'negative'}`}>
-                                  최소 {recommendedYears}년
-                                </span>
-                              </div>
-
-                              {privatePensionTotal > 0 && (
-                                <>
-                                  <div className="withdrawal-slider-section">
-                                    <div className="slider-header">
-                                      <span className="slider-label">인출 기간 설정</span>
-                                      <span className="slider-value">{pensionWithdrawalYears}년</span>
-                                    </div>
-                                    <input
-                                      type="range"
-                                      min="10"
-                                      max="40"
-                                      value={pensionWithdrawalYears}
-                                      onChange={(e) => setPensionWithdrawalYears(Number(e.target.value))}
-                                      className="withdrawal-slider"
-                                    />
-                                    <div className="slider-range">
-                                      <span>10년</span>
-                                      <span>40년</span>
-                                    </div>
-                                  </div>
-
-                                  <div className="withdrawal-result">
-                                    <div className="result-row">
-                                      <span>사적연금 연간 인출액</span>
-                                      <span className={isOverLimit ? 'warning' : 'good'}>{formatCurrency(yearlyWithdrawal)}</span>
-                                    </div>
-                                    <div className="result-row">
-                                      <span>사적연금 월 인출액</span>
-                                      <span>{formatCurrency(monthlyWithdrawal)}</span>
-                                    </div>
-                                    <div className="result-row">
-                                      <span>분리과세 한도</span>
-                                      <span>연 1,500만원</span>
-                                    </div>
-                                    {isOverLimit && (
-                                      <div className="result-row warning-row">
-                                        <span>한도 초과액 (종합과세)</span>
-                                        <span className="warning">{formatCurrency(overLimitAmount)}</span>
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  <div className="tax-estimate">
-                                    <div className="tax-estimate-header">
-                                      <span>예상 연간 세액</span>
-                                      <span className="tax-estimate-total">{formatCurrency(totalAnnualTax)}</span>
-                                    </div>
-                                    <div className="tax-breakdown">
-                                      <div className="tax-item">
-                                        <span>분리과세 ({avgTaxRate}%)</span>
-                                        <span>{formatCurrency(separateTax)}</span>
-                                      </div>
-                                      {comprehensiveTax > 0 && (
-                                        <div className="tax-item warning">
-                                          <span>종합과세 추가 (약 15%)</span>
-                                          <span>{formatCurrency(comprehensiveTax)}</span>
-                                        </div>
-                                      )}
-                                    </div>
-                                    <p className="tax-note-small">
-                                      * 분리과세 세율: 55-69세 5.5%, 70-79세 4.4%, 80세+ 3.3%
-                                    </p>
-                                  </div>
-                                </>
-                              )}
-
-                              <div className="simulation-tip">
-                                <p><strong>국민연금:</strong> 종합과세 대상으로 분리과세 한도(1,500만원)와 무관합니다.</p>
-                                <p><strong>사적연금:</strong> 연 1,500만원 이하 인출 시 분리과세(3.3~5.5%) 선택 가능. 초과 시 종합과세됩니다.</p>
-                                {isOverLimit && (
-                                  <p className="tip-warning"><strong>주의:</strong> 현재 설정({pensionWithdrawalYears}년)으로는 분리과세 한도를 초과합니다. 인출 기간을 {recommendedYears}년 이상으로 늘리면 분리과세 혜택을 유지할 수 있습니다.</p>
-                                )}
-                              </div>
-                            </div>
-                          )
-                        })()}
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
                 {/* 부동산 절세 인사이트 - 자가인 경우만 */}
@@ -3605,7 +3629,9 @@ function App() {
             onClick={() => {
               setData(initialData)
               setIsInputExpanded(true)
-              window.scrollTo({ top: 0, behavior: 'smooth' })
+              setTimeout(() => {
+                document.getElementById('data-input-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }, 100)
             }}
           >
             내 재무데이터 입력해보기
@@ -3648,7 +3674,9 @@ function App() {
             </div>
 
             <div className="comments-list">
-              {displayedComments.length === 0 ? (
+              {isLoadingComments ? (
+                <p className="no-comments">의견을 불러오는 중...</p>
+              ) : displayedComments.length === 0 ? (
                 <p className="no-comments">아직 의견이 없습니다. 첫 번째 의견을 남겨주세요!</p>
               ) : (
                 displayedComments.map((comment) => {
