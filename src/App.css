@@ -197,6 +197,13 @@ h1 {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .example-buttons {
+    justify-content: flex-start;
+  }
 }
 
 .example-buttons button {
@@ -231,13 +238,17 @@ h1 {
   background: rgba(255, 255, 255, 0.95);
   color: #667eea;
   border: none;
-  padding: 0.4rem 1rem;
+  padding: 0.5rem 1.2rem;
   font-weight: 600;
-  margin-left: auto;
+  width: 100%;
+  margin-top: 0.5rem;
 }
 
 @media (min-width: 768px) {
   .example-buttons .my-data-btn {
+    width: auto;
+    margin-top: 0;
+    margin-left: auto;
     padding: 0.5rem 1.5rem;
   }
 }
@@ -3514,7 +3525,13 @@ h2 {
 .tax-strategy-item {
   background: #f8f9fa;
   border-radius: 8px;
-  padding: 1rem;
+  padding: 0.875rem;
+}
+
+@media (min-width: 768px) {
+  .tax-strategy-item {
+    padding: 1rem;
+  }
 }
 
 .tax-strategy-item.full-width {
@@ -3523,12 +3540,20 @@ h2 {
 
 .strategy-title {
   display: block;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: #1a1a2e;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
+  padding-bottom: 0.4rem;
   border-bottom: 1px solid #e0e0e0;
+}
+
+@media (min-width: 768px) {
+  .strategy-title {
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+  }
 }
 
 .strategy-title.warning-badge {
@@ -3548,7 +3573,13 @@ h2 {
 }
 
 .strategy-content {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+}
+
+@media (min-width: 768px) {
+  .strategy-content {
+    font-size: 0.85rem;
+  }
 }
 
 /* 전략 테이블 */
@@ -3592,12 +3623,20 @@ h2 {
 }
 
 .strategy-list li {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: #555;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
   position: relative;
   padding-left: 0.5rem;
-  line-height: 1.5;
+  line-height: 1.6;
+}
+
+@media (min-width: 768px) {
+  .strategy-list li {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+  }
 }
 
 .strategy-list li::before {
@@ -3635,9 +3674,19 @@ h2 {
 
 .simulation-row {
   display: flex;
-  justify-content: space-between;
-  padding: 0.5rem 0;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.6rem 0;
   border-bottom: 1px solid #eee;
+}
+
+@media (min-width: 768px) {
+  .simulation-row {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 0;
+    padding: 0.5rem 0;
+  }
 }
 
 .simulation-row:last-of-type {
@@ -3646,11 +3695,25 @@ h2 {
 
 .sim-label {
   color: #555;
+  font-size: 0.85rem;
+}
+
+@media (min-width: 768px) {
+  .sim-label {
+    font-size: inherit;
+  }
 }
 
 .sim-value {
   font-weight: 700;
   color: #1a1a2e;
+  font-size: 0.95rem;
+}
+
+@media (min-width: 768px) {
+  .sim-value {
+    font-size: inherit;
+  }
 }
 
 .sim-value.positive {
@@ -3671,9 +3734,16 @@ h2 {
 
 .simulation-tip p {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: #555;
-  line-height: 1.5;
+  line-height: 1.6;
+}
+
+@media (min-width: 768px) {
+  .simulation-tip p {
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
 }
 
 /* 부동산 세금 정보 */
@@ -3813,7 +3883,13 @@ h2 {
 .tax-checklist {
   background: #f8f9fa;
   border-radius: 8px;
-  padding: 1rem;
+  padding: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .tax-checklist {
+    padding: 1rem;
+  }
 }
 
 .checklist-items {
@@ -3824,12 +3900,21 @@ h2 {
 
 .checklist-item {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
   padding: 0.75rem;
   background: #fff;
   border-radius: 6px;
   border-left: 3px solid #e8e8e8;
+}
+
+@media (min-width: 768px) {
+  .checklist-item {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+  }
 }
 
 .checklist-item.complete {
@@ -3881,16 +3966,30 @@ h2 {
 }
 
 .checklist-category {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: #1a1a2e;
-  min-width: 100px;
+  min-width: auto;
+}
+
+@media (min-width: 768px) {
+  .checklist-category {
+    font-size: 0.85rem;
+    min-width: 100px;
+  }
 }
 
 .checklist-message {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: #555;
   flex: 1;
+  line-height: 1.5;
+}
+
+@media (min-width: 768px) {
+  .checklist-message {
+    font-size: 0.85rem;
+  }
 }
 
 /* 결혼여부 체크박스 */
