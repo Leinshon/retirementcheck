@@ -3750,8 +3750,9 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
           <button
             className="floating-toggle-btn mobile-only"
             onClick={() => setShowMobileButtons(!showMobileButtons)}
+            aria-label={showMobileButtons ? '버튼 숨기기' : '버튼 보이기'}
           >
-            {showMobileButtons ? 'v' : '^'}
+            {showMobileButtons ? '−' : '+'}
           </button>
 
           {/* 실제 버튼들 (모바일에서는 토글로 숨기기/보이기) */}

@@ -316,20 +316,24 @@ h1 {
 
 /* 모바일 토글 버튼 */
 .floating-toggle-btn {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: #64748b;
+  background: #94a3b8;
   color: white;
   border: none;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 1.25rem;
+  font-weight: 300;
+  line-height: 1;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .floating-toggle-btn:hover {
-  background: #475569;
+  background: #64748b;
 }
 
 .floating-my-data-btn {
