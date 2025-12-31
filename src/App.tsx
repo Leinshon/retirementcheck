@@ -151,7 +151,6 @@ type InvestmentStyle = 'conservative' | 'balanced' | 'aggressive'
 function App() {
   const [data, setData] = useState<FinancialData>(initialData)
   const [investmentStyle, setInvestmentStyle] = useState<InvestmentStyle>('balanced')
-  const [isInputExpanded, setIsInputExpanded] = useState(true)
   const [isTaxReferenceExpanded, setIsTaxReferenceExpanded] = useState(false)
   const [useFinancialAssetOnly, setUseFinancialAssetOnly] = useState(false)
   const [pensionWithdrawalYears, setPensionWithdrawalYears] = useState(20) // 연금 인출 기간 (년)
@@ -160,6 +159,7 @@ function App() {
   const [applyInflation, setApplyInflation] = useState(false) // 물가상승률 반영 여부
   const [useMedianData, setUseMedianData] = useState(true) // true: 중앙값, false: 평균값
   const [selectedExampleAge, setSelectedExampleAge] = useState<AgeGroup | null>(null) // 선택된 예시 연령대
+  const [viewMode, setViewMode] = useState<'input' | 'example'>('input') // 뷰 모드: 입력 / 대한민국 평균
 
   // 댓글 관련 상태
   const [comments, setComments] = useState<Comment[]>([])
@@ -832,6 +832,25 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
 
   const currentPortfolio = portfolios[investmentStyle]
 
+  // 필요 수익률에 따라 포트폴리오 자동 선택
+  useEffect(() => {
+    if (requiredReturn === null) return
+
+    // 필요 수익률에 맞는 최적의 포트폴리오 선택
+    // 보수적: 4~6%, 균형: 7~10%, 공격적: 10~15%
+    let recommendedStyle: InvestmentStyle = 'balanced'
+
+    if (requiredReturn <= 6) {
+      recommendedStyle = 'conservative'
+    } else if (requiredReturn <= 10) {
+      recommendedStyle = 'balanced'
+    } else {
+      recommendedStyle = 'aggressive'
+    }
+
+    setInvestmentStyle(recommendedStyle)
+  }, [requiredReturn])
+
   // 선택한 포트폴리오가 목표 수익률을 달성할 수 있는지 확인
   const canAchieveGoal = requiredReturn !== null && requiredReturn <= currentPortfolio.expectedReturn.max
 
@@ -945,9 +964,6 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
 
     // 선택된 예시 연령대 설정
     setSelectedExampleAge(ageGroup)
-
-    // 입력창 닫기
-    setIsInputExpanded(false)
   }
 
   // 중앙값/평균값 변경 시 선택된 예시 데이터 다시 로드
@@ -960,99 +976,39 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
 
   return (
     <div className="app">
-      <h1>은퇴 준비 진단 & 가이드</h1>
-      <p className="app-disclaimer">
-        통계청 2025 가계금융복지조사 데이터를 기반으로 개인이 사용하려고 만든 은퇴 진단 도구입니다.
-        <strong>참고용</strong>으로만 활용해 주세요.
-        틀린 내용이나 의견이 있다면 <button className="disclaimer-feedback-btn" onClick={() => setShowCommentSection(true)}>의견 남기기</button>를 이용해주세요.
-      </p>
-
-      {/* 예시 보기 */}
-      <div className="example-section">
-        <div className="example-header">
-          <span className="example-label">예시 보기</span>
-          <span className="example-desc">연령대별 통계청 2025 가계금융복지조사 데이터</span>
-        </div>
-        <div className="data-type-tabs">
-          <button
-            className={`data-type-tab ${useMedianData ? 'active' : ''}`}
-            onClick={() => setUseMedianData(true)}
-          >
-            중앙값
-          </button>
-          <button
-            className={`data-type-tab ${!useMedianData ? 'active' : ''}`}
-            onClick={() => setUseMedianData(false)}
-          >
-            평균값
-          </button>
-        </div>
-        <div className="data-type-desc">
-          {useMedianData ? (
-            <span>중앙값: 전체 가구를 순서대로 나열했을 때 정중앙에 있는 값 (상위 50%)</span>
-          ) : (
-            <span className="mean-warning">
-              평균값: 모든 가구의 합계를 가구 수로 나눈 값.
-              <strong> 주의:</strong> 소수의 고자산층이 평균을 크게 끌어올려 실제 체감과 차이가 클 수 있습니다.
-            </span>
-          )}
-        </div>
-        <div className="example-buttons">
-          <button
-            className={selectedExampleAge === '29세이하' ? 'active' : ''}
-            onClick={() => loadExampleData('29세이하')}
-          >20대</button>
-          <button
-            className={selectedExampleAge === '30대' ? 'active' : ''}
-            onClick={() => loadExampleData('30대')}
-          >30대</button>
-          <button
-            className={selectedExampleAge === '40대' ? 'active' : ''}
-            onClick={() => loadExampleData('40대')}
-          >40대</button>
-          <button
-            className={selectedExampleAge === '50대' ? 'active' : ''}
-            onClick={() => loadExampleData('50대')}
-          >50대</button>
-          <button
-            className={selectedExampleAge === '60대' ? 'active' : ''}
-            onClick={() => loadExampleData('60대')}
-          >60대</button>
-          {selectedExampleAge ? (
-            <button
-              className="my-data-btn example-confirm"
-              onClick={() => {
-                document.getElementById('section-financial-summary')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-              }}
-            >
-              예시 확인하기
-            </button>
-          ) : (
-            <button
-              className="my-data-btn"
-              onClick={() => {
-                setData(initialData)
-                setSelectedExampleAge(null)
-                setIsInputExpanded(true)
-                setTimeout(() => {
-                  document.getElementById('data-input-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                }, 100)
-              }}
-            >
-              내 재무데이터 입력해보기
-            </button>
-          )}
+      <h1>나의 은퇴 준비현황 진단기</h1>
+      <div className="app-intro">
+        <p className="intro-notice">
+          은퇴준비 체계적으로 하고 계신가요? <br></br>당신의 상황을 기준으로 계산된 결과를 지금 바로 확인하세요.<br /><strong>참고용</strong>으로만 활용해 주세요.
+        </p>
+        <div className="intro-features">
+          <span>재무현황 요약</span>
+          <span>현금흐름 분석</span>
+          <span>은퇴 목표 달성도</span>
+          <span>연금 인출 전략</span>
+          <span>절세 인사이트</span>
         </div>
       </div>
 
-      {/* 데이터 입력 토글 헤더 */}
-      <div id="data-input-section" className="input-toggle-header" onClick={() => setIsInputExpanded(!isInputExpanded)}>
-        <h2>데이터 입력</h2>
-        <span className={`toggle-icon ${isInputExpanded ? 'expanded' : ''}`}>▼</span>
+      {/* 뷰 모드 탭 셀렉터 */}
+      <div className="view-mode-tabs">
+        <button
+          className={`view-mode-tab ${viewMode === 'input' ? 'active' : ''}`}
+          onClick={() => setViewMode('input')}
+        >
+          내 재무데이터 입력하기
+        </button>
+        <button
+          className={`view-mode-tab ${viewMode === 'example' ? 'active' : ''}`}
+          onClick={() => setViewMode('example')}
+        >
+          대한민국 평균 보기
+        </button>
       </div>
 
-      {/* 입력 섹션들 */}
-      <div className={`input-sections ${isInputExpanded ? 'expanded' : 'collapsed'}`}>
+      {/* 입력 섹션들 - viewMode가 'input'일 때만 표시 */}
+      {viewMode === 'input' && (
+      <div className="input-sections expanded">
         {/* 개인정보 보호 안내 */}
         <div className="privacy-notice">
           <span className="privacy-icon">🔒</span>
@@ -1532,6 +1488,80 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
           </div>
         </div>
       </section>
+      </div>
+      )}
+
+      {/* 대한민국 평균 보기 - viewMode가 'example'일 때만 표시 */}
+      {viewMode === 'example' && (
+      <div id="example-section" className="example-section">
+        <div className="example-header">
+          <span className="example-label">대한민국 평균 보기</span>
+          <span className="example-desc">연령대를 선택하면 통계청 데이터가 자동으로 입력됩니다</span>
+        </div>
+        <div className="data-type-tabs">
+          <button
+            className={`data-type-tab ${useMedianData ? 'active' : ''}`}
+            onClick={() => setUseMedianData(true)}
+          >
+            중앙값
+          </button>
+          <button
+            className={`data-type-tab ${!useMedianData ? 'active' : ''}`}
+            onClick={() => setUseMedianData(false)}
+          >
+            평균값
+          </button>
+        </div>
+        <div className="data-type-desc">
+          {useMedianData ? (
+            <span>중앙값: 전체 가구를 순서대로 나열했을 때 정중앙에 있는 값 (상위 50%)</span>
+          ) : (
+            <span className="mean-warning">
+              평균값: 모든 가구의 합계를 가구 수로 나눈 값.
+              <strong> 주의:</strong> 소수의 고자산층이 평균을 크게 끌어올려 실제 체감과 차이가 클 수 있습니다.
+            </span>
+          )}
+        </div>
+        <div className="example-buttons">
+          <button
+            className={selectedExampleAge === '29세이하' ? 'active' : ''}
+            onClick={() => loadExampleData('29세이하')}
+          >20대</button>
+          <button
+            className={selectedExampleAge === '30대' ? 'active' : ''}
+            onClick={() => loadExampleData('30대')}
+          >30대</button>
+          <button
+            className={selectedExampleAge === '40대' ? 'active' : ''}
+            onClick={() => loadExampleData('40대')}
+          >40대</button>
+          <button
+            className={selectedExampleAge === '50대' ? 'active' : ''}
+            onClick={() => loadExampleData('50대')}
+          >50대</button>
+          <button
+            className={selectedExampleAge === '60대' ? 'active' : ''}
+            onClick={() => loadExampleData('60대')}
+          >60대</button>
+          {selectedExampleAge && (
+            <button
+              className="my-data-btn example-confirm"
+              onClick={() => {
+                document.getElementById('section-financial-summary')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }}
+            >
+              예시 확인하기
+            </button>
+          )}
+        </div>
+      </div>
+      )}
+
+      {/* 입력 영역과 결과 영역 구분 */}
+      <div className="results-divider">
+        <span className="divider-line"></span>
+        <span className="divider-text">진단 결과</span>
+        <span className="divider-line"></span>
       </div>
 
       {/* 인사이트 */}
@@ -2237,14 +2267,81 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
         </div>
       </section>
 
-      {/* 투자 배분 추천 */}
+      {/* 연간 저축가능금액 배분 추천 */}
       <section className="insight-section">
-        <h2>연간 투자 배분 추천 {data.isMarried && spouseYearlyIncome > 0 && <span className="couple-badge">부부 합산</span>}</h2>
-        <p className="section-description">
-          세액공제 혜택을 최대화하면서 자산을 효율적으로 배분하는 방법을 안내합니다.
-          연금저축과 IRP 한도를 우선 채운 후 나머지를 일반 투자계좌에 배분합니다.
-          {data.isMarried && spouseYearlyIncome > 0 && ' 부부 각자 세액공제 한도를 활용합니다.'}
-        </p>
+        <h2>연간 저축가능금액 배분 추천 {data.isMarried && spouseYearlyIncome > 0 && <span className="couple-badge">부부 합산</span>}</h2>
+        <div className="allocation-note">
+          <h4>배분 원칙</h4>
+          <p className="allocation-summary">세금 혜택이 큰 계좌부터 순서대로 채웁니다</p>
+          <details className="allocation-details">
+            <summary>배분 원칙 자세히 보기</summary>
+            <div className="details-content">
+              <div className="tax-rate-info">
+                {data.isMarried && spouseYearlyIncome > 0 ? (
+                  <>
+                    본인 연소득 {yearlyIncome.toLocaleString()}만원 (세액공제율 <strong>{TAX_DEDUCTION_RATE}%</strong>)
+                    {' / '}
+                    배우자 연소득 {spouseYearlyIncome.toLocaleString()}만원 (세액공제율 <strong>{SPOUSE_TAX_DEDUCTION_RATE}%</strong>)
+                  </>
+                ) : (
+                  <>
+                    연소득 {yearlyIncome.toLocaleString()}만원 → 세액공제율 <strong>{TAX_DEDUCTION_RATE}%</strong> 적용
+                    {yearlyIncome > 5500 && <span className="tax-note">(5,500만원 초과)</span>}
+                  </>
+                )}
+              </div>
+
+              <div className="priority-section">
+                <h5>1순위: 연금저축 + IRP (연간 저축가능액: 0~900만원)</h5>
+                <p>연금저축 600만원 + IRP 300만원을 먼저 채웁니다.</p>
+                <ul>
+                  <li>납입한 금액의 13.2%~16.5%를 연말정산 때 돌려받습니다 (소득에 따라 다름)</li>
+                  <li>총급여 5,500만원 이하: 16.5% / 초과: 13.2%</li>
+                  <li>예: 900만원 납입 시 → 118.8만원~148.5만원 환급</li>
+                  <li>55세 이후 연금으로 받으면 3.3~5.5% 저율과세</li>
+                </ul>
+              </div>
+
+              <div className="priority-section">
+                <h5>2순위: 연금저축 추가 납입 (연간 저축가능액: 900~1,800만원)</h5>
+                <p>세액공제 한도(900만원)를 넘어도 연금저축에 추가 납입하는 것이 유리합니다.</p>
+                <ul>
+                  <li>투자 수익에 대해 세금을 내지 않고 계속 굴릴 수 있음 (과세이연)</li>
+                  <li>IRP보다 중도인출이 자유로워 비상시 활용 가능</li>
+                  <li>연금저축 + IRP 합산 연 1,800만원까지 납입 가능</li>
+                </ul>
+              </div>
+
+              <div className="priority-section">
+                <h5>3순위: ISA (연간 저축가능액: 1,800~3,800만원)</h5>
+                <p>연금계좌 한도를 다 채웠다면 ISA를 활용합니다.</p>
+                <ul>
+                  <li>수익 200만원까지 비과세, 초과분은 9.9% 분리과세</li>
+                  <li>3년 의무 가입 후 해지 가능</li>
+                  <li>만기 후 연금계좌로 이전하면 추가 세액공제 혜택</li>
+                  <li>연 2,000만원까지 납입 가능</li>
+                </ul>
+              </div>
+
+              <div className="priority-section">
+                <h5>4순위: 일반 해외주식 계좌 (연간 저축가능액: 3,800만원 초과)</h5>
+                <p>위 계좌들을 다 채우고 남은 금액은 일반 계좌로 투자합니다.</p>
+                <ul>
+                  <li>해외주식 양도차익 연 250만원까지 비과세</li>
+                  <li>250만원 초과 시 22% 양도소득세</li>
+                  <li>언제든 자유롭게 인출 가능</li>
+                </ul>
+              </div>
+
+              {data.isMarried && spouseYearlyIncome > 0 && (
+                <div className="couple-info">
+                  <h5>맞벌이 부부 혜택</h5>
+                  <p>부부 각자 한도가 별도 적용되어 세액공제 한도 합계 1,800만원까지 가능합니다.</p>
+                </div>
+              )}
+            </div>
+          </details>
+        </div>
         <div className="investment-summary">
           <div className="investment-header">
             <div className="yearly-amount">
@@ -2446,34 +2543,6 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
               </div>
             </div>
           )}
-
-          <div className="allocation-note">
-            <h4>배분 원칙</h4>
-            <div className="tax-rate-info">
-              {data.isMarried && spouseYearlyIncome > 0 ? (
-                <>
-                  본인 연소득 {yearlyIncome.toLocaleString()}만원 (세액공제율 <strong>{TAX_DEDUCTION_RATE}%</strong>)
-                  {' / '}
-                  배우자 연소득 {spouseYearlyIncome.toLocaleString()}만원 (세액공제율 <strong>{SPOUSE_TAX_DEDUCTION_RATE}%</strong>)
-                </>
-              ) : (
-                <>
-                  연소득 {yearlyIncome.toLocaleString()}만원 → 세액공제율 <strong>{TAX_DEDUCTION_RATE}%</strong> 적용
-                  {yearlyIncome > 5500 && <span className="tax-note">(5,500만원 초과)</span>}
-                </>
-              )}
-            </div>
-            <ul>
-              <li><strong>1단계 (0~900만원):</strong> 연금저축 600만원 + IRP 300만원으로 세액공제 혜택 최대화 (세액공제 한도 900만원)</li>
-              <li><strong>2단계 (900~1,800만원):</strong> 연금저축으로 추가 납입. 세액공제는 없지만 과세이연 혜택, IRP보다 유동성이 좋음</li>
-              <li><strong>3단계 (1,800~3,800만원):</strong> ISA로 배분. 비과세 200만원 + 초과분 9.9% 분리과세</li>
-              <li><strong>4단계 (3,800만원 초과):</strong> 일반 주식계좌로 투자</li>
-            </ul>
-            <p className="limit-note">* 세액공제 한도: 연금저축 + IRP 합산 연 900만원 / 납입 한도: 합산 연 1,800만원 (1인 기준)</p>
-            {data.isMarried && spouseYearlyIncome > 0 && (
-              <p className="limit-note couple-note">* 맞벌이 부부는 각자 한도가 별도 적용되어 세액공제 한도 합계 1,800만원까지 가능</p>
-            )}
-          </div>
         </div>
       </section>
 
@@ -2528,7 +2597,7 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
                 {requiredReturn !== null ? (
                   <div className="required-return-display">
                     <span className={`required-return-value ${requiredReturn <= 0 ? 'achieved' : requiredReturn <= 7 ? 'easy' : requiredReturn <= 12 ? 'moderate' : 'hard'}`}>
-                      {requiredReturn <= 0 ? '달성 완료!' : `${requiredReturn.toFixed(1)}%`}
+                      {requiredReturn <= 0 ? '투자없이 달성 가능' : `${requiredReturn.toFixed(1)}%`}
                     </span>
                     {requiredReturn > 0 && (
                       <span className="required-return-assessment">
@@ -2953,7 +3022,7 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
                 <ul className="strategy-list">
                   <li><strong>연 1,500만원 이하:</strong> 분리과세 선택으로 종합소득세 회피</li>
                   <li><strong>연 1,500만원 초과:</strong> 종합과세 대상, 다른 소득과 합산</li>
-                  <li><strong>국민연금:</strong> 연금소득으로 종합과세 대상 (연 350만원 초과분)</li>
+                  <li><strong>국민연금:</strong> 전액 종합과세 대상 (다른 소득과 합산)</li>
                   <li><strong>퇴직연금 → 개인연금:</strong> 순서대로 인출 시 세금 최적화</li>
                 </ul>
               </div>
@@ -3813,9 +3882,10 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
               className="header-my-data-btn"
               onClick={() => {
                 setData(initialData)
-                setIsInputExpanded(true)
+                setViewMode('input')
+                setSelectedExampleAge(null)
                 setTimeout(() => {
-                  document.getElementById('data-input-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
                 }, 100)
               }}
             >
