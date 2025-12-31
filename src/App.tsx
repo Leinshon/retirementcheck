@@ -356,29 +356,30 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
   // Intersection Observer로 현재 보이는 섹션 추적
   useEffect(() => {
     const sectionIds = Object.keys(sectionNames)
-    const observers: IntersectionObserver[] = []
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // 가장 많이 보이는 섹션 찾기
+        const visibleEntries = entries.filter(entry => entry.isIntersecting)
+        if (visibleEntries.length > 0) {
+          // intersectionRatio가 가장 높은 섹션 선택
+          const mostVisible = visibleEntries.reduce((prev, current) =>
+            current.intersectionRatio > prev.intersectionRatio ? current : prev
+          )
+          setCurrentSection(mostVisible.target.id)
+        }
+      },
+      { threshold: [0.05, 0.1, 0.2, 0.3], rootMargin: '-60px 0px -20% 0px' }
+    )
 
     sectionIds.forEach(id => {
       const element = document.getElementById(id)
       if (element) {
-        const observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach(entry => {
-              if (entry.isIntersecting) {
-                setCurrentSection(id)
-              }
-            })
-          },
-          { threshold: 0.3, rootMargin: '-100px 0px -50% 0px' }
-        )
         observer.observe(element)
-        observers.push(observer)
       }
     })
 
-    return () => {
-      observers.forEach(observer => observer.disconnect())
-    }
+    return () => observer.disconnect()
   }, [])
 
   const handleChange = (field: keyof FinancialData, value: string | boolean) => {
