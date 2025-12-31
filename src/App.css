@@ -3297,6 +3297,13 @@ h2 {
   font-weight: 600;
 }
 
+.percentile-detail .range-info {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: #ef4444;
+  font-weight: 500;
+}
+
 .distribution-reference {
   display: flex;
   gap: 1rem;
@@ -3639,7 +3646,7 @@ h2 {
   color: #888;
 }
 
-/* 세액공제 한도 활용 현황 */
+/* 세액공제 한도 활용안 */
 .tax-limit-status {
   background: #fff;
   border-radius: 10px;
@@ -3651,8 +3658,14 @@ h2 {
 .tax-limit-status h4 {
   font-size: 0.9rem;
   color: #1a1a2e;
-  margin: 0 0 1rem 0;
+  margin: 0 0 0.5rem 0;
   font-weight: 600;
+}
+
+.tax-limit-guide {
+  font-size: 0.8rem;
+  color: #666;
+  margin: 0 0 1rem 0;
 }
 
 .limit-bars {

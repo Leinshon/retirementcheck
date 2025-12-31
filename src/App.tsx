@@ -950,6 +950,14 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
     setIsInputExpanded(false)
   }
 
+  // 중앙값/평균값 변경 시 선택된 예시 데이터 다시 로드
+  useEffect(() => {
+    if (selectedExampleAge) {
+      loadExampleData(selectedExampleAge)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [useMedianData])
+
   return (
     <div className="app">
       <h1>은퇴 준비 진단 & 가이드</h1>
@@ -1576,32 +1584,24 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
 
         {/* 순자산 분포 위치 */}
         {currentAge > 0 && netWorth > 0 && (() => {
-          // 백분위에 해당하는 순자산 값 계산 (역산)
-          const percentileToNetWorth = (percentile: number): number => {
-            const { p10, p20, p30, p40, p60, p70, p80, p90 } = ageGroupPercentiles
-            const median = ageGroupData.netWorth.median
-            if (percentile <= 10) {
-              return Math.round((percentile / 10) * p10)
-            } else if (percentile <= 20) {
-              return Math.round(p10 + ((percentile - 10) / 10) * (p20 - p10))
-            } else if (percentile <= 30) {
-              return Math.round(p20 + ((percentile - 20) / 10) * (p30 - p20))
-            } else if (percentile <= 40) {
-              return Math.round(p30 + ((percentile - 30) / 10) * (p40 - p30))
-            } else if (percentile <= 50) {
-              return Math.round(p40 + ((percentile - 40) / 10) * (median - p40))
-            } else if (percentile <= 60) {
-              return Math.round(median + ((percentile - 50) / 10) * (p60 - median))
-            } else if (percentile <= 70) {
-              return Math.round(p60 + ((percentile - 60) / 10) * (p70 - p60))
-            } else if (percentile <= 80) {
-              return Math.round(p70 + ((percentile - 70) / 10) * (p80 - p70))
-            } else if (percentile <= 90) {
-              return Math.round(p80 + ((percentile - 80) / 10) * (p90 - p80))
-            } else {
-              return Math.round(p90 + ((percentile - 90) / 10) * p90)
-            }
+          const { p10, p20, p30, p40, p60, p70, p80, p90 } = ageGroupPercentiles
+          const median = ageGroupData.netWorth.median
+
+          // 사용자가 속한 10% 구간 결정 (실제 순자산 값 기준으로 경계값과 비교)
+          const getUserPercentileRange = (): { low: number; high: number; lowValue: number; highValue: number } => {
+            if (netWorth <= p10) return { low: 0, high: 10, lowValue: 0, highValue: p10 }
+            if (netWorth <= p20) return { low: 10, high: 20, lowValue: p10, highValue: p20 }
+            if (netWorth <= p30) return { low: 20, high: 30, lowValue: p20, highValue: p30 }
+            if (netWorth <= p40) return { low: 30, high: 40, lowValue: p30, highValue: p40 }
+            if (netWorth <= median) return { low: 40, high: 50, lowValue: p40, highValue: median }
+            if (netWorth <= p60) return { low: 50, high: 60, lowValue: median, highValue: p60 }
+            if (netWorth <= p70) return { low: 60, high: 70, lowValue: p60, highValue: p70 }
+            if (netWorth <= p80) return { low: 70, high: 80, lowValue: p70, highValue: p80 }
+            if (netWorth <= p90) return { low: 80, high: 90, lowValue: p80, highValue: p90 }
+            return { low: 90, high: 100, lowValue: p90, highValue: p90 * 2 } // 상위 10% 이상
           }
+
+          const userRange = getUserPercentileRange()
 
           // 정규분포 곡선 데이터 생성
           const generateBellCurve = () => {
@@ -1621,6 +1621,14 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
           const bellData = generateBellCurve()
           const labels = Array.from({ length: 101 }, (_, i) => i)
 
+          // 사용자 구간 하이라이트용 데이터
+          const highlightData = bellData.map((value, index) => {
+            if (index >= userRange.low && index <= userRange.high) {
+              return value
+            }
+            return null
+          })
+
           const chartData = {
             labels,
             datasets: [
@@ -1632,10 +1640,17 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
                 borderWidth: 2,
                 tension: 0.4,
                 pointRadius: 0,
-                pointHoverRadius: 6,
-                pointHoverBackgroundColor: '#4361ee',
-                pointHoverBorderColor: '#fff',
-                pointHoverBorderWidth: 2,
+                pointHoverRadius: 0,
+              },
+              {
+                data: highlightData,
+                fill: true,
+                backgroundColor: 'rgba(239, 68, 68, 0.35)',
+                borderColor: 'transparent',
+                borderWidth: 0,
+                tension: 0.4,
+                pointRadius: 0,
+                pointHoverRadius: 0,
               },
             ],
           }
@@ -1660,47 +1675,7 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
                 display: false,
               },
               tooltip: {
-                enabled: true,
-                backgroundColor: 'rgba(26, 26, 46, 0.95)',
-                titleColor: '#fff',
-                bodyColor: '#fff',
-                padding: 12,
-                cornerRadius: 8,
-                displayColors: false,
-                titleFont: {
-                  size: 12,
-                  weight: 'normal' as const,
-                },
-                bodyFont: {
-                  size: 14,
-                  weight: 'bold' as const,
-                },
-                callbacks: {
-                  title: (context: { label: string }[]) => {
-                    const percentile = parseInt(context[0].label)
-                    // 0%와 100%는 존재하지 않으므로 1% 미만/이상으로 표시
-                    if (percentile <= 0) {
-                      return `하위 1% 미만`
-                    } else if (percentile >= 100) {
-                      return `상위 1% 미만`
-                    } else if (percentile <= 10) {
-                      return `하위 ${percentile}%`
-                    }
-                    return `상위 ${100 - percentile}%`
-                  },
-                  label: (context: { label: string }) => {
-                    const percentile = parseInt(context.label)
-                    const netWorthAtPercentile = percentileToNetWorth(percentile)
-                    // 하위 10% 이하는 "~이하", 상위 10% 이상은 "~이상"으로 표시
-                    // 0%일 때는 P10 기준으로 이하 표시
-                    if (percentile <= 10) {
-                      return `순자산: ${formatCurrency(netWorthAtPercentile)} 이하`
-                    } else if (percentile >= 90) {
-                      return `순자산: ${formatCurrency(netWorthAtPercentile)} 이상`
-                    }
-                    return `순자산: ${formatCurrency(netWorthAtPercentile)}`
-                  },
-                },
+                enabled: false,
               },
               annotation: {
                 annotations: {
@@ -1740,16 +1715,19 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
                 </div>
                 <div className="distribution-result">
                   <div className="percentile-badge">
-                    상위 <strong>{100 - userPercentile}%</strong>
+                    상위 <strong>{100 - userRange.high}~{100 - userRange.low}%</strong> 구간
                   </div>
                   <div className="percentile-detail">
                     <p>
-                      {userAgeGroup} 가구 중 상위 {100 - userPercentile}% 수준입니다.
+                      {userAgeGroup} 가구 중 상위 {100 - userRange.high}~{100 - userRange.low}% 구간에 속합니다.
                       {userPercentile >= 50 ? (
                         <span className="good"> 동 연령대 중위({formatCurrency(ageGroupData.netWorth.median)}) 이상입니다.</span>
                       ) : (
                         <span className="moderate"> 동 연령대 중위({formatCurrency(ageGroupData.netWorth.median)}) 미만입니다.</span>
                       )}
+                    </p>
+                    <p className="range-info">
+                      이 구간의 순자산: {formatCurrency(userRange.lowValue)} ~ {userRange.high === 100 ? `${formatCurrency(userRange.lowValue)} 이상` : formatCurrency(userRange.highValue)}
                     </p>
                   </div>
                 </div>
@@ -3302,9 +3280,10 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
                   </div>
                 </div>
 
-                {/* 세액공제 한도 활용 현황 */}
+                {/* 세액공제 한도 활용안 */}
                 <div className="tax-limit-status">
-                  <h4>세액공제 한도 활용 현황</h4>
+                  <h4>세액공제 한도 활용안</h4>
+                  <p className="tax-limit-guide">소득 기준 최적 배분 추천입니다. 해당 계좌가 없다면 개설 후 활용하세요.</p>
                   <div className="limit-bars">
                     <div className="limit-bar-item">
                       <div className="limit-bar-header">
