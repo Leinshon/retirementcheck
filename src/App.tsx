@@ -159,6 +159,7 @@ function App() {
   const [showFloatingButton, setShowFloatingButton] = useState(false) // 플로팅 버튼 표시
   const [applyInflation, setApplyInflation] = useState(false) // 물가상승률 반영 여부
   const [useMedianData, setUseMedianData] = useState(true) // true: 중앙값, false: 평균값
+  const [selectedExampleAge, setSelectedExampleAge] = useState<AgeGroup | null>(null) // 선택된 예시 연령대
 
   // 댓글 관련 상태
   const [comments, setComments] = useState<Comment[]>([])
@@ -399,6 +400,9 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
   }, [])
 
   const handleChange = (field: keyof FinancialData, value: string | boolean) => {
+    // 사용자가 직접 값을 변경하면 예시 모드 해제
+    setSelectedExampleAge(null)
+
     if (typeof value === 'string') {
       // housingType은 그대로 저장
       if (field === 'housingType') {
@@ -413,6 +417,9 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
   }
 
   const handleFamilyChange = (index: number, field: keyof FamilyMember, value: string) => {
+    // 사용자가 직접 값을 변경하면 예시 모드 해제
+    setSelectedExampleAge(null)
+
     const newFamily = [...data.family]
     if (field === 'age') {
       const numericValue = value.replace(/[^0-9]/g, '')
@@ -936,6 +943,9 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
       privatePension: String(privatePension),
     })
 
+    // 선택된 예시 연령대 설정
+    setSelectedExampleAge(ageGroup)
+
     // 입력창 닫기
     setIsInputExpanded(false)
   }
@@ -980,23 +990,50 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
           )}
         </div>
         <div className="example-buttons">
-          <button onClick={() => loadExampleData('29세이하')}>20대</button>
-          <button onClick={() => loadExampleData('30대')}>30대</button>
-          <button onClick={() => loadExampleData('40대')}>40대</button>
-          <button onClick={() => loadExampleData('50대')}>50대</button>
-          <button onClick={() => loadExampleData('60대')}>60대</button>
           <button
-            className="my-data-btn"
-            onClick={() => {
-              setData(initialData)
-              setIsInputExpanded(true)
-              setTimeout(() => {
-                document.getElementById('data-input-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-              }, 100)
-            }}
-          >
-            내 재무데이터 입력해보기
-          </button>
+            className={selectedExampleAge === '29세이하' ? 'active' : ''}
+            onClick={() => loadExampleData('29세이하')}
+          >20대</button>
+          <button
+            className={selectedExampleAge === '30대' ? 'active' : ''}
+            onClick={() => loadExampleData('30대')}
+          >30대</button>
+          <button
+            className={selectedExampleAge === '40대' ? 'active' : ''}
+            onClick={() => loadExampleData('40대')}
+          >40대</button>
+          <button
+            className={selectedExampleAge === '50대' ? 'active' : ''}
+            onClick={() => loadExampleData('50대')}
+          >50대</button>
+          <button
+            className={selectedExampleAge === '60대' ? 'active' : ''}
+            onClick={() => loadExampleData('60대')}
+          >60대</button>
+          {selectedExampleAge ? (
+            <button
+              className="my-data-btn example-confirm"
+              onClick={() => {
+                document.getElementById('section-financial-summary')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }}
+            >
+              예시 확인하기
+            </button>
+          ) : (
+            <button
+              className="my-data-btn"
+              onClick={() => {
+                setData(initialData)
+                setSelectedExampleAge(null)
+                setIsInputExpanded(true)
+                setTimeout(() => {
+                  document.getElementById('data-input-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }, 100)
+              }}
+            >
+              내 재무데이터 입력해보기
+            </button>
+          )}
         </div>
       </div>
 

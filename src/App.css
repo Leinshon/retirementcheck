@@ -23,6 +23,7 @@ html {
   padding: 1rem;
   background: #f5f7fa;
   min-height: 100vh;
+  overflow-x: hidden; /* 모바일 오버플로우 방지 */
 }
 
 @media (min-width: 768px) {
@@ -161,17 +162,17 @@ h1 {
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
   color: #64748b;
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.75rem;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 500;
   transition: all 0.2s ease;
 }
 
 @media (min-width: 768px) {
   .data-type-tab {
-    padding: 0.4rem 0.9rem;
+    padding: 0.5rem 1rem;
     font-size: 0.85rem;
   }
 }
@@ -230,17 +231,17 @@ h1 {
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
   color: #475569;
-  padding: 0.6rem 1.25rem;
+  padding: 0.5rem 0.9rem;
   border-radius: 24px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 500;
   transition: all 0.2s ease;
 }
 
 @media (min-width: 768px) {
   .example-buttons button {
-    padding: 0.5rem 1.1rem;
+    padding: 0.6rem 1.25rem;
     font-size: 0.85rem;
   }
 }
@@ -259,7 +260,8 @@ h1 {
   background: #4361ee;
   color: white;
   border: none;
-  padding: 0.6rem 1.25rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
   font-weight: 600;
   width: 100%;
   margin-top: 0.5rem;
@@ -270,12 +272,29 @@ h1 {
     width: auto;
     margin-top: 0;
     margin-left: auto;
-    padding: 0.5rem 1.5rem;
+    padding: 0.6rem 1.5rem;
+    font-size: 0.85rem;
   }
 }
 
 .example-buttons .my-data-btn:hover {
   background: #3730a3;
+}
+
+/* 선택된 연령대 버튼 */
+.example-buttons button.active {
+  background: #4361ee;
+  border-color: #4361ee;
+  color: white;
+}
+
+/* 예시 확인하기 버튼 */
+.example-buttons .example-confirm {
+  background: #10b981;
+}
+
+.example-buttons .example-confirm:hover {
+  background: #059669;
 }
 
 /* 스크롤 시 나타나는 헤더 */
@@ -975,6 +994,7 @@ h2 {
   padding: 0.875rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   margin-bottom: 0.75rem;
+  overflow: hidden; /* 입력란 오버플로우 방지 */
 }
 
 @media (min-width: 768px) {
@@ -1006,6 +1026,7 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+  min-width: 0; /* flex item overflow 방지 */
 }
 
 .input-group label {
@@ -1030,9 +1051,12 @@ h2 {
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 0.5rem 0.6rem;
-  font-size: 0.9rem;
+  font-size: 16px; /* iOS 줌 방지 */
   outline: none;
   transition: border-color 0.2s;
+  min-width: 0; /* flex item overflow 방지 */
+  width: 100%;
+  box-sizing: border-box;
 }
 
 @media (min-width: 768px) {
@@ -1059,6 +1083,7 @@ h2 {
   border-radius: 8px;
   overflow: hidden;
   transition: border-color 0.2s;
+  min-width: 0; /* flex item overflow 방지 */
 }
 
 .input-wrapper:focus-within {
@@ -1080,7 +1105,7 @@ h2 {
   flex: 1;
   border: none;
   padding: 0.5rem 0.6rem;
-  font-size: 0.9rem;
+  font-size: 16px; /* iOS 줌 방지 */
   outline: none;
   text-align: right;
   min-width: 0;
@@ -1115,16 +1140,29 @@ h2 {
 
 .family-row {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
   align-items: flex-end;
+}
+
+@media (min-width: 768px) {
+  .family-row {
+    gap: 1rem;
+  }
 }
 
 .family-row .input-group {
   flex: 1;
+  min-width: 0; /* flex item overflow 방지 */
 }
 
 .family-row .input-group:first-child {
-  flex: 1.5;
+  flex: 1.2;
+}
+
+@media (min-width: 768px) {
+  .family-row .input-group:first-child {
+    flex: 1.5;
+  }
 }
 
 .add-btn {
@@ -1147,11 +1185,19 @@ h2 {
   color: #dc2626;
   border: 1px solid #ffcccb;
   border-radius: 8px;
-  padding: 0.6rem 0.75rem;
-  font-size: 0.8rem;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.75rem;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .remove-btn {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.8rem;
+  }
 }
 
 .remove-btn:hover {
@@ -1191,7 +1237,14 @@ h2 {
 }
 
 .input-wrapper.inline {
-  width: 200px;
+  width: 100%;
+  max-width: 200px;
+}
+
+@media (min-width: 768px) {
+  .input-wrapper.inline {
+    width: 200px;
+  }
 }
 
 /* 인사이트 섹션 */
@@ -1265,9 +1318,16 @@ h2 {
 }
 
 .insight-value {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #1a1a2e;
+  word-break: keep-all;
+}
+
+@media (min-width: 768px) {
+  .insight-value {
+    font-size: 1.1rem;
+  }
 }
 
 .insight-value.negative {
@@ -3558,9 +3618,16 @@ h2 {
 }
 
 .tax-summary-value {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #1a1a2e;
+  word-break: keep-all;
+}
+
+@media (min-width: 768px) {
+  .tax-summary-value {
+    font-size: 1.25rem;
+  }
 }
 
 .tax-summary-value.accent {
