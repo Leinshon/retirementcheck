@@ -1,31 +1,10 @@
 <svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#667eea"/>
-      <stop offset="100%" style="stop-color:#764ba2"/>
-    </linearGradient>
-  </defs>
-
   <!-- Background -->
-  <rect width="1200" height="630" fill="url(#bg)"/>
-
-  <!-- Decorative circles -->
-  <circle cx="100" cy="100" r="150" fill="rgba(255,255,255,0.1)"/>
-  <circle cx="1100" cy="530" r="200" fill="rgba(255,255,255,0.1)"/>
-  <circle cx="900" cy="100" r="80" fill="rgba(255,255,255,0.05)"/>
-
-  <!-- Main content area -->
-  <rect x="80" y="180" width="1040" height="270" rx="20" fill="rgba(255,255,255,0.15)"/>
-
-  <!-- Icon -->
-  <text x="600" y="280" text-anchor="middle" font-size="80" fill="white">📊</text>
+  <rect width="1200" height="630" fill="#4361ee"/>
 
   <!-- Title -->
-  <text x="600" y="370" text-anchor="middle" font-family="Arial, sans-serif" font-size="52" font-weight="bold" fill="white">은퇴준비 진단 &amp; 가이드</text>
+  <text x="600" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="white">은퇴준비 진단</text>
 
   <!-- Subtitle -->
-  <text x="600" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="rgba(255,255,255,0.9)">통계청 2025 데이터 기반 맞춤형 은퇴 설계</text>
-
-  <!-- Bottom tagline -->
-  <text x="600" y="560" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="rgba(255,255,255,0.7)">내 재무 상태 진단 • 절세 전략 • 연금 인출 시뮬레이션</text>
+  <text x="600" y="380" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" fill="rgba(255,255,255,0.85)">통계청 데이터 기반 맞춤형 은퇴 설계</text>
 </svg>
