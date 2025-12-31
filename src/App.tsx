@@ -341,6 +341,18 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
     'section-tax': '절세 인사이트',
   }
 
+  // 섹션별 예시 질문
+  const sectionExamples: Record<string, string> = {
+    'section-financial-summary': '순자산 늘리려면 어떻게 해야해?',
+    'section-cashflow': '저축률 높이는 방법 알려줘',
+    'section-expense': '지출 줄이는 팁 있어?',
+    'section-retirement-goal': '은퇴 자금 얼마나 필요해?',
+    'section-portfolio': '주식 비중 어느정도가 좋아?',
+    'section-retirement-cashflow': '은퇴 후 생활비 어떻게 마련해?',
+    'section-pension-strategy': '연금 언제부터 받는게 좋아?',
+    'section-tax': '연금저축과 IRP 차이가 뭐야?',
+  }
+
   // Intersection Observer로 현재 보이는 섹션 추적
   useEffect(() => {
     const sectionIds = Object.keys(sectionNames)
@@ -3802,7 +3814,7 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
                   setAiQuestion(e.target.value)
                 }
               }}
-              placeholder="예: 연금저축과 IRP 차이가 뭐야?"
+              placeholder={`예: ${currentSection && sectionExamples[currentSection] ? sectionExamples[currentSection] : '연금저축과 IRP 차이가 뭐야?'}`}
               rows={2}
               maxLength={50}
             />
