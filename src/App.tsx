@@ -14,6 +14,33 @@ import { createClient } from '@supabase/supabase-js'
 import './App.css'
 import { householdFinance2025, estimatePercentiles, type AgeGroup } from './data/householdFinance2025'
 
+// 간단한 마크다운 파서
+const parseMarkdown = (text: string): string => {
+  return text
+    // 헤더
+    .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    // 볼드/이탤릭
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    // 인라인 코드
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    // 리스트
+    .replace(/^\* (.+)$/gm, '<li>$1</li>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+    // 연속된 li를 ul로 감싸기
+    .replace(/(<li>.*<\/li>\n?)+/g, (match) => `<ul>${match}</ul>`)
+    // 줄바꿈을 br로
+    .replace(/\n/g, '<br/>')
+    // ul 안의 불필요한 br 제거
+    .replace(/<\/li><br\/><li>/g, '</li><li>')
+    .replace(/<ul><br\/>/g, '<ul>')
+    .replace(/<br\/><\/ul>/g, '</ul>')
+}
+
 // Supabase 클라이언트 설정
 const supabaseUrl = 'https://xikizeymdabgwmwfifff.supabase.co'
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpa2l6ZXltZGFiZ3dtd2ZpZmZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxNDk5MDUsImV4cCI6MjA4MjcyNTkwNX0.uCqIK7X5ahvQ2YisEBG1O5wVcgoYv5WGPGAl_eLryP4'
@@ -262,6 +289,9 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
 `.trim()
 
     try {
+      // 질문을 DB에 저장 (비동기, 에러 무시)
+      supabase.from('ai_queries').insert({ question: aiQuestion }).then()
+
       const response = await fetch('/api/ask-gemini', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -3803,12 +3833,11 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
 
               {aiAnswer && (
                 <div className="ask-answer">
-                  <div className="ask-answer-label">AI 답변</div>
-                  <div className="ask-answer-content">
-                    {aiAnswer.split('\n').map((line, i) => (
-                      line.trim() ? <p key={i}>{line}</p> : null
-                    ))}
-                  </div>
+                  <div className="ask-answer-label">답변</div>
+                  <div
+                    className="ask-answer-content"
+                    dangerouslySetInnerHTML={{ __html: parseMarkdown(aiAnswer) }}
+                  />
                 </div>
               )}
             </div>
