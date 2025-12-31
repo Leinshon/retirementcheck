@@ -11,7 +11,7 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
   },
-  "homepage": "https://leinshon.github.io/retirementcheck/",
+  "homepage": "https://smart-retirement.netlify.app",
   "dependencies": {
     "@supabase/supabase-js": "^2.89.0",
     "chart.js": "^4.5.1",
