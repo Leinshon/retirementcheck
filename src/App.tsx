@@ -1426,7 +1426,7 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
         <h2>기타 부채</h2>
         <div className="input-grid">
           <div className="input-group">
-            <label>기타 부채 (신용대출 등)</label>
+            <label>기타 부채 (부동산 관련 대출 제외, 신용대출 등)</label>
             <div className="input-wrapper">
               <input
                 type="text"
@@ -1458,7 +1458,7 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
               />
               <span className="currency">만원</span>
             </div>
-            <span className="input-hint">예시: 1인 100만원 기준 입력됨</span>
+            <span className="input-hint">참고: 2025년 기준 1인당 월평균 수령액 65만원</span>
           </div>
           <div className="input-group">
             <label>퇴직연금 (적립액)</label>
@@ -3078,11 +3078,14 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
                   const isOverLimit = yearlyWithdrawal > 1500
                   const overLimitAmount = Math.max(0, yearlyWithdrawal - 1500)
 
-                  // 권장 인출 기간 (분리과세 유지)
-                  const recommendedYears = privatePensionTotal > 0 ? Math.ceil(privatePensionTotal / 1500) : 0
-
                   // 연금소득세 계산 (나이에 따른 세율)
                   const retirementAge = getNum('targetRetirementAge') || 60
+
+                  // 권장 인출 기간 (분리과세 유지)
+                  const recommendedYears = privatePensionTotal > 0 ? Math.ceil(privatePensionTotal / 1500) : 0
+                  const lifeExpectancy = 90 // 기대수명 가정
+                  const maxReasonableYears = Math.max(0, lifeExpectancy - retirementAge)
+                  const isUnrealisticPeriod = recommendedYears > maxReasonableYears
                   // 55-69세: 5.5%, 70-79세: 4.4%, 80세 이상: 3.3%
                   const getPensionTaxRate = (age: number) => {
                     if (age >= 80) return 3.3
@@ -3097,8 +3100,30 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
                   const separateTaxableAmount = Math.min(yearlyWithdrawal, 1500)
                   const separateTax = Math.round(separateTaxableAmount * (avgTaxRate / 100))
 
-                  // 종합과세 시 추가 세액 (한도 초과분, 가정: 15% 세율)
-                  const comprehensiveTax = Math.round(overLimitAmount * 0.15)
+                  // 종합과세 시 추가 세액 (한도 초과분) - 종합소득세 누진세율 적용
+                  // 연금수령금액만을 유일한 소득으로 가정, 과세표준 = 한도 초과분
+                  const calculateComprehensiveTax = (amount: number): { tax: number; rate: number } => {
+                    if (amount <= 0) return { tax: 0, rate: 0 }
+                    // 2024년 기준 종합소득세 과세표준 구간 (만원 단위)
+                    const brackets = [
+                      { limit: 1400, rate: 6, deduction: 0 },
+                      { limit: 5000, rate: 15, deduction: 126 },
+                      { limit: 8800, rate: 24, deduction: 576 },
+                      { limit: 15000, rate: 35, deduction: 1544 },
+                      { limit: 30000, rate: 38, deduction: 1994 },
+                      { limit: 50000, rate: 40, deduction: 2594 },
+                      { limit: 100000, rate: 42, deduction: 3594 },
+                      { limit: Infinity, rate: 45, deduction: 6594 }
+                    ]
+                    for (const bracket of brackets) {
+                      if (amount <= bracket.limit) {
+                        const tax = Math.round(amount * (bracket.rate / 100) - bracket.deduction)
+                        return { tax: Math.max(0, tax), rate: bracket.rate }
+                      }
+                    }
+                    return { tax: 0, rate: 0 }
+                  }
+                  const { tax: comprehensiveTax, rate: comprehensiveTaxRate } = calculateComprehensiveTax(overLimitAmount)
 
                   // 연간 총 예상 세액
                   const totalAnnualTax = separateTax + comprehensiveTax
@@ -3116,7 +3141,9 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
                       <div className="simulation-row">
                         <span className="sim-label">권장 인출 기간 (분리과세 유지)</span>
                         <span className={`sim-value ${recommendedYears <= 25 ? 'positive' : 'negative'}`}>
-                          최소 {recommendedYears}년
+                          {isUnrealisticPeriod
+                            ? `기대수명 초과 (${recommendedYears}년 필요)`
+                            : `최소 ${recommendedYears}년`}
                         </span>
                       </div>
 
@@ -3174,13 +3201,14 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
                               </div>
                               {comprehensiveTax > 0 && (
                                 <div className="tax-item warning">
-                                  <span>종합과세 추가 (약 15%)</span>
+                                  <span>종합과세 추가 ({comprehensiveTaxRate}%)</span>
                                   <span>{formatCurrency(comprehensiveTax)}</span>
                                 </div>
                               )}
                             </div>
                             <p className="tax-note-small">
                               * 분리과세 세율: 55-69세 5.5%, 70-79세 4.4%, 80세+ 3.3%
+                              <br />* 종합과세는 연금소득만 있을 때를 가정한 예상 세액입니다. 추가 소득이 있을 시 더 높은 세율이 적용될 수 있습니다.
                             </p>
                           </div>
                         </>

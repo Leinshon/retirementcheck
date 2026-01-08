@@ -528,3 +528,247 @@
     transform: rotate(90deg);
   }
 }
+
+/* 백테스팅 섹션 */
+.backtest-section {
+  background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+  border: 1px solid #e2e8f0;
+}
+
+.backtest-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* 문장형 입력 */
+.backtest-sentence {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  font-size: 1.1rem;
+  color: #1e293b;
+  line-height: 2.2;
+}
+
+.backtest-sentence span {
+  white-space: nowrap;
+}
+
+.backtest-inline-input {
+  width: 50px;
+  padding: 0.3rem 0.4rem;
+  border: none;
+  border-bottom: 2px solid #4361ee;
+  background: transparent;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #4361ee;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.backtest-inline-input:focus {
+  border-bottom-color: #3730a3;
+}
+
+.backtest-inline-input.wide {
+  width: 65px;
+}
+
+/* 모바일에서 줄바꿈 지원 */
+@media (max-width: 400px) {
+  .backtest-sentence {
+    font-size: 1rem;
+  }
+
+  .backtest-inline-input {
+    font-size: 1.1rem;
+    width: 45px;
+  }
+
+  .backtest-inline-input.wide {
+    width: 55px;
+  }
+}
+
+.backtest-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.backtest-input-group {
+  flex: 1;
+  min-width: 140px;
+}
+
+.backtest-input-group.full-width {
+  flex: none;
+  width: 100%;
+}
+
+.backtest-input-group label {
+  display: block;
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+}
+
+.backtest-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.backtest-input-wrapper input {
+  width: 70px;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #4361ee;
+  text-align: center;
+  background: #fff;
+}
+
+.backtest-input-wrapper input:focus {
+  outline: none;
+  border-color: #4361ee;
+}
+
+.backtest-input-wrapper span {
+  font-size: 0.9rem;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.backtest-input-group select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #1e293b;
+  background: #fff;
+  cursor: pointer;
+}
+
+.backtest-input-group select:focus {
+  outline: none;
+  border-color: #4361ee;
+}
+
+.backtest-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background: #4361ee;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 0.5rem;
+}
+
+.backtest-btn:hover:not(:disabled) {
+  background: #3730a3;
+}
+
+.backtest-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.backtest-error {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.backtest-result {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.backtest-result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+}
+
+.backtest-result-row:not(:last-child) {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.backtest-result-row .backtest-label {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.backtest-result-row .backtest-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.backtest-result-row.highlight .backtest-value {
+  color: #4361ee;
+  font-size: 1.1rem;
+}
+
+.backtest-result-row.return.positive .backtest-value {
+  color: #10b981;
+}
+
+.backtest-result-row.return.negative .backtest-value {
+  color: #ef4444;
+}
+
+@media (max-width: 480px) {
+  .backtest-row {
+    flex-direction: column;
+  }
+
+  .backtest-input-group {
+    min-width: 100%;
+  }
+}
+
+/* 백테스팅 설명 */
+.backtest-description {
+  font-size: 0.85rem;
+  color: #64748b;
+  text-align: center;
+  margin: 0 0 1.25rem 0;
+  line-height: 1.5;
+}
+
+/* 백테스팅 그래프 */
+.backtest-chart {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
+  height: 250px;
+}
+
+@media (max-width: 480px) {
+  .backtest-chart {
+    height: 200px;
+  }
+}

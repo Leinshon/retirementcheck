@@ -1,0 +1,913 @@
+/* Professional Scenario Page Styles */
+/* 기존 App.css 스타일 가이드 준수 */
+/* - 이모지 금지 */
+/* - border-left 액센트 금지 */
+/* - hover는 색상만 변경 */
+
+/* ============ 페이지 헤더 ============ */
+.scenario-page-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.scenario-page-header h1 {
+  text-align: center;
+  color: #1a1a2e;
+  margin-bottom: 0.5rem;
+  font-size: 1.4rem;
+}
+
+@media (min-width: 768px) {
+  .scenario-page-header h1 {
+    font-size: 1.75rem;
+  }
+}
+
+.scenario-page-header p {
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* ============ 현재 상태 섹션 (insight-section 패턴 사용) ============ */
+.current-status-section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 1.5rem;
+}
+
+.current-status-section h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0 0 1rem 0;
+}
+
+/* insight-grid 패턴 */
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 600px) {
+  .status-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* insight-card 패턴 */
+.status-item {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.status-label {
+  font-size: 0.75rem;
+  color: #666;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.status-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.current-projection {
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.current-projection p {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0 0 0.75rem 0;
+}
+
+.current-projection strong {
+  color: #1a1a2e;
+}
+
+.projection-rate {
+  color: #f59e0b;
+  margin-left: 0.5rem;
+}
+
+.projection-bar {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.projection-fill {
+  height: 100%;
+  background: #f59e0b;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* ============ 비교 차트 섹션 ============ */
+.comparison-chart-section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 1.5rem;
+}
+
+.comparison-chart-section h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0 0 1rem 0;
+}
+
+.chart-container {
+  height: 140px;
+}
+
+/* ============ 모바일 탭 ============ */
+.mobile-tabs {
+  display: none;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: #4361ee;
+}
+
+.tab-btn.active {
+  border-color: #4361ee;
+  color: #4361ee;
+  background: #eef2ff;
+}
+
+/* ============ 시나리오 비교 그리드 ============ */
+.scenarios-comparison {
+  margin-bottom: 1.5rem;
+}
+
+.scenarios-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+/* ============ 시나리오 카드 ============ */
+.scenario-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.scenario-card:hover {
+  border-color: #4361ee;
+}
+
+.scenario-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.scenario-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: white;
+}
+
+.scenario-badge.aggressive {
+  background: #4361ee;
+}
+
+.scenario-badge.balanced {
+  background: #10b981;
+}
+
+.scenario-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 0.25rem 0;
+}
+
+.scenario-subtitle {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0;
+}
+
+/* 시나리오 지표 */
+.scenario-metrics {
+  margin-bottom: 1rem;
+}
+
+.metric-main {
+  margin-bottom: 1rem;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  color: #666;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.metric-change {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.metric-change.positive {
+  color: #10b981;
+}
+
+.metric-row {
+  margin-bottom: 0.75rem;
+}
+
+.metric-row.small {
+  display: flex;
+  gap: 1rem;
+}
+
+.metric-row.small .metric-item {
+  flex: 1;
+}
+
+.metric-row.small .metric-value {
+  font-size: 1rem;
+}
+
+/* 진행률 바 */
+.progress-bar-container {
+  position: relative;
+  height: 24px;
+  background: #f1f5f9;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 12px;
+  transition: width 0.5s ease;
+}
+
+.progress-text {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+/* 핵심 포인트 */
+.scenario-highlights {
+  margin-bottom: 1rem;
+}
+
+.scenario-highlights h4 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0 0 0.5rem 0;
+}
+
+.scenario-highlights ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+  margin: 0;
+}
+
+.scenario-highlights li {
+  font-size: 0.8rem;
+  color: #475569;
+  margin-bottom: 0.375rem;
+  line-height: 1.4;
+}
+
+/* 포트폴리오 바 (SimpleApp 패턴) */
+.scenario-portfolio {
+  margin-bottom: 1rem;
+}
+
+.scenario-portfolio h4 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0 0 0.5rem 0;
+}
+
+.portfolio-bar {
+  display: flex;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.portfolio-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 600;
+}
+
+.portfolio-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* 위험도 */
+.scenario-risk {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid #e2e8f0;
+}
+
+.risk-label {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.risk-stars {
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+
+.risk-stars .star {
+  color: #e2e8f0;
+}
+
+.risk-stars .star.filled {
+  color: #f59e0b;
+}
+
+/* 선택 버튼 */
+.select-scenario-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background: #4361ee;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.select-scenario-btn:hover {
+  background: #3651d4;
+}
+
+/* ============ 결과 화면 헤더 ============ */
+.result-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #64748b;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  transition: color 0.2s ease;
+}
+
+.back-btn:hover {
+  color: #1a1a2e;
+}
+
+.selected-badge {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: #10b981;
+  color: white;
+  border-radius: 50px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.result-subtitle {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* ============ 선택된 시나리오 요약 ============ */
+.selected-summary-section {
+  margin-bottom: 1.5rem;
+}
+
+.summary-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.summary-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 0.125rem 0;
+}
+
+.summary-header p {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.summary-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.summary-metric {
+  text-align: center;
+}
+
+.summary-metric .label {
+  font-size: 0.75rem;
+  color: #666;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.summary-metric .value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #4361ee;
+}
+
+/* ============ 로드맵 섹션 ============ */
+.roadmap-section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 1.5rem;
+}
+
+.roadmap-section h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0 0 1.25rem 0;
+}
+
+/* 타임라인 진행 바 */
+.timeline-progress {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  padding: 0 1rem;
+  position: relative;
+}
+
+.timeline-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.step-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: white;
+  border: 3px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-bottom: 0.5rem;
+}
+
+.step-dot.active {
+  border-color: #4361ee;
+  color: #4361ee;
+  background: #eef2ff;
+}
+
+.step-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.step-theme {
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+.step-line {
+  position: absolute;
+  top: 14px;
+  left: calc(50% + 18px);
+  width: calc(100% - 36px);
+  height: 3px;
+  background: #e2e8f0;
+  z-index: 0;
+}
+
+.timeline-step:first-child .step-line {
+  left: calc(50% + 18px);
+  width: calc(200% - 36px);
+}
+
+/* 월별 블록 */
+.month-block {
+  margin-bottom: 1.25rem;
+}
+
+.month-header {
+  margin-bottom: 0.75rem;
+}
+
+.month-header h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #4361ee;
+  display: inline-block;
+  margin: 0;
+}
+
+/* 액션 카드 - border-left 제거 */
+.actions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.action-card {
+  padding: 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.action-card:hover {
+  opacity: 0.9;
+}
+
+.action-card.completed {
+  background: #f0fdf4;
+}
+
+.action-card.in_progress {
+  background: #eef2ff;
+}
+
+.action-card.upcoming {
+  background: #f8f9fa;
+}
+
+.action-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.action-status-icon {
+  font-size: 0.8rem;
+  font-weight: bold;
+  font-family: monospace;
+}
+
+.action-title {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.action-time {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.action-description {
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0 0 0.5rem 0;
+}
+
+.action-impact {
+  font-size: 0.8rem;
+  color: #64748b;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.action-impact strong {
+  color: #10b981;
+}
+
+.action-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.action-category {
+  text-transform: capitalize;
+}
+
+/* ============ 투자 가이드 섹션 ============ */
+.investment-guide-section {
+  margin-bottom: 1.5rem;
+}
+
+.investment-guide-section h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0 0 1rem 0;
+}
+
+.guide-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.guide-card h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0 0 1rem 0;
+}
+
+.portfolio-summary {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
+}
+
+.step-list {
+  padding-left: 1.25rem;
+  margin: 0;
+}
+
+.step-list li {
+  font-size: 0.875rem;
+  color: #475569;
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.guide-card.caution {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+
+.guide-card.caution h3 {
+  color: #92400e;
+}
+
+.caution-list {
+  list-style: disc;
+  padding-left: 1.25rem;
+  margin: 0;
+}
+
+.caution-list li {
+  font-size: 0.8rem;
+  color: #92400e;
+  margin-bottom: 0.375rem;
+  line-height: 1.5;
+}
+
+/* ============ CTA 섹션 ============ */
+.cta-section {
+  margin-bottom: 1.5rem;
+}
+
+.cta-card {
+  background: #4361ee;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  color: white;
+}
+
+.cta-card h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.cta-card p {
+  font-size: 0.875rem;
+  opacity: 0.9;
+  margin: 0 0 1.25rem 0;
+  line-height: 1.5;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.cta-btn {
+  padding: 0.75rem 1.25rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.cta-btn:hover {
+  opacity: 0.9;
+}
+
+.cta-btn.primary {
+  background: white;
+  color: #4361ee;
+}
+
+.cta-btn.secondary {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* ============ 반응형 ============ */
+@media (max-width: 768px) {
+  .scenarios-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-tabs {
+    display: flex;
+  }
+
+  .scenario-card {
+    display: none;
+  }
+
+  .scenario-card.active {
+    display: block;
+  }
+
+  .summary-metrics {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .summary-metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .summary-metric:last-child {
+    border-bottom: none;
+  }
+
+  .timeline-progress {
+    padding: 0;
+  }
+
+  .step-line {
+    display: none;
+  }
+
+  .cta-buttons {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .scenario-page-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .status-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .scenario-card {
+    padding: 1rem;
+  }
+
+  .metric-value {
+    font-size: 1.25rem;
+  }
+
+  .action-header {
+    flex-wrap: wrap;
+  }
+
+  .action-time {
+    width: 100%;
+    margin-top: 0.25rem;
+  }
+}

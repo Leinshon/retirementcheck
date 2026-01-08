@@ -1,9 +1,40 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from 'chart.js'
+import { Line } from 'react-chartjs-2'
 import './App.css'
 import './SimpleApp.css'
 
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+)
+
 type InvestmentStyle = 'conservative' | 'balanced' | 'aggressive'
+
+// 백테스팅 ETF 목록
+const backtestETFs = [
+  { symbol: 'SPY', name: 'S&P 500', ticker: 'SPY', maxYears: 30 },
+  { symbol: 'QQQ', name: 'NASDAQ 100', ticker: 'QQQ', maxYears: 25 },
+  { symbol: '069500.KS', name: 'KODEX 200', ticker: 'KODEX200', maxYears: 22 },
+  { symbol: '238720.KS', name: 'TIGER 일본니케이225', ticker: 'TIGER니케이', maxYears: 14 },
+]
 
 // 포트폴리오 데이터
 const portfolios = {
@@ -51,6 +82,19 @@ function SimpleApp() {
 
   // 토글 상태
   const [showDetails, setShowDetails] = useState(false)
+
+  // 백테스팅 상태
+  const [backtestYearsInput, setBacktestYearsInput] = useState('5')
+  const [backtestETF, setBacktestETF] = useState(backtestETFs[0])
+  const [backtestMonthlyInput, setBacktestMonthlyInput] = useState('50')
+  const [backtestResult, setBacktestResult] = useState<{
+    totalInvested: number
+    currentValue: number
+    returnRate: number
+    chartData: { date: string; invested: number; value: number }[]
+  } | null>(null)
+  const [backtestLoading, setBacktestLoading] = useState(false)
+  const [backtestError, setBacktestError] = useState<string | null>(null)
 
   // 계산 결과
   const yearsToRetirement = Math.max(0, retirementAge - currentAge)
@@ -216,6 +260,78 @@ function SimpleApp() {
     if (value < 10000) return null
     const eok = value / 10000
     return `${eok.toFixed(2).replace(/\.?0+$/, '')}억원`
+  }
+
+  // 백테스팅 실행
+  const runBacktest = async () => {
+    const backtestYears = parseInt(backtestYearsInput) || 5
+    const backtestMonthly = parseInt(backtestMonthlyInput) || 50
+
+    setBacktestLoading(true)
+    setBacktestError(null)
+    setBacktestResult(null)
+
+    try {
+      const response = await fetch(
+        `/api/etf-history?symbol=${backtestETF.symbol}&years=${backtestYears}`
+      )
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || '데이터를 가져오는데 실패했습니다')
+      }
+
+      const data = await response.json()
+
+      if (!data.data || data.data.length < 2) {
+        throw new Error('충분한 과거 데이터가 없습니다. 다른 기간이나 ETF를 선택해주세요.')
+      }
+
+      const monthlyData = data.data as { date: string; price: number }[]
+
+      // DCA 시뮬레이션: 매월 초 정액 매수
+      let totalShares = 0
+      const monthlyInvestment = backtestMonthly * 10000 // 만원 -> 원
+      const chartData: { date: string; invested: number; value: number }[] = []
+
+      for (let i = 0; i < monthlyData.length - 1; i++) {
+        const month = monthlyData[i]
+        const shares = monthlyInvestment / month.price
+        totalShares += shares
+
+        const cumulativeInvested = monthlyInvestment * (i + 1)
+        const currentValue = totalShares * month.price
+
+        chartData.push({
+          date: month.date,
+          invested: Math.round(cumulativeInvested / 10000), // 만원 단위
+          value: Math.round(currentValue / 10000), // 만원 단위
+        })
+      }
+
+      const currentPrice = monthlyData[monthlyData.length - 1].price
+      const currentValue = totalShares * currentPrice
+      const totalInvested = monthlyInvestment * (monthlyData.length - 1)
+      const returnRate = ((currentValue - totalInvested) / totalInvested) * 100
+
+      // 마지막 데이터 포인트 추가
+      chartData.push({
+        date: monthlyData[monthlyData.length - 1].date,
+        invested: Math.round(totalInvested / 10000),
+        value: Math.round(currentValue / 10000),
+      })
+
+      setBacktestResult({
+        totalInvested: Math.round(totalInvested / 10000), // 만원 단위
+        currentValue: Math.round(currentValue / 10000), // 만원 단위
+        returnRate: Math.round(returnRate * 10) / 10,
+        chartData,
+      })
+    } catch (error) {
+      setBacktestError(error instanceof Error ? error.message : '오류가 발생했습니다')
+    } finally {
+      setBacktestLoading(false)
+    }
   }
 
   return (
@@ -589,6 +705,195 @@ function SimpleApp() {
             </div>
           </div>
         </details>
+      </section>
+
+      {/* 백테스팅 */}
+      <section className="insight-section backtest-section">
+        <h2>만약 과거부터 투자했다면?</h2>
+        <p className="backtest-description">
+          Yahoo Finance의 실제 과거 가격 데이터를 기반으로 매월 정액 적립식 투자(DCA) 결과를 계산합니다.
+        </p>
+        <div className="backtest-inputs">
+          <div className="backtest-row">
+            <div className="backtest-input-group">
+              <label>기간</label>
+              <div className="backtest-input-wrapper">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={backtestYearsInput}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '')
+                    if (val === '' || parseInt(val) <= backtestETF.maxYears) {
+                      setBacktestYearsInput(val)
+                    }
+                  }}
+                  onBlur={() => {
+                    if (backtestYearsInput === '' || parseInt(backtestYearsInput) < 1) {
+                      setBacktestYearsInput('1')
+                    }
+                  }}
+                  placeholder="5"
+                />
+                <span>년 전부터</span>
+              </div>
+            </div>
+            <div className="backtest-input-group">
+              <label>월 투자금액</label>
+              <div className="backtest-input-wrapper">
+                <span>매월</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={backtestMonthlyInput}
+                  onChange={(e) => setBacktestMonthlyInput(e.target.value.replace(/\D/g, ''))}
+                  onBlur={() => {
+                    if (backtestMonthlyInput === '' || parseInt(backtestMonthlyInput) < 1) {
+                      setBacktestMonthlyInput('1')
+                    }
+                  }}
+                  placeholder="50"
+                />
+                <span>만원씩</span>
+              </div>
+            </div>
+          </div>
+          <div className="backtest-row">
+            <div className="backtest-input-group full-width">
+              <label>ETF</label>
+              <select
+                value={backtestETF.symbol}
+                onChange={(e) => {
+                  const etf = backtestETFs.find(f => f.symbol === e.target.value)!
+                  setBacktestETF(etf)
+                  const currentYears = parseInt(backtestYearsInput) || 5
+                  if (currentYears > etf.maxYears) {
+                    setBacktestYearsInput(String(etf.maxYears))
+                  }
+                }}
+              >
+                {backtestETFs.map(etf => (
+                  <option key={etf.symbol} value={etf.symbol}>
+                    {etf.name} (최대 {etf.maxYears}년)
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <button
+            className="backtest-btn"
+            onClick={runBacktest}
+            disabled={backtestLoading}
+          >
+            {backtestLoading ? '계산 중...' : '계산하기'}
+          </button>
+        </div>
+
+        {backtestError && (
+          <div className="backtest-error">
+            {backtestError}
+          </div>
+        )}
+
+        {backtestResult && (
+          <div className="backtest-result">
+            <div className="backtest-result-row">
+              <span className="backtest-label">총 투자금액</span>
+              <span className="backtest-value">{formatCurrency(backtestResult.totalInvested)}</span>
+            </div>
+            <div className="backtest-result-row highlight">
+              <span className="backtest-label">현재 평가금액</span>
+              <span className="backtest-value">{formatCurrency(backtestResult.currentValue)}</span>
+            </div>
+            <div className={`backtest-result-row return ${backtestResult.returnRate >= 0 ? 'positive' : 'negative'}`}>
+              <span className="backtest-label">수익률</span>
+              <span className="backtest-value">
+                {backtestResult.returnRate >= 0 ? '+' : ''}{backtestResult.returnRate}%
+              </span>
+            </div>
+
+            {/* 그래프 */}
+            <div className="backtest-chart">
+              <Line
+                data={{
+                  labels: backtestResult.chartData.map(d => d.date),
+                  datasets: [
+                    {
+                      label: '평가금액',
+                      data: backtestResult.chartData.map(d => d.value),
+                      borderColor: '#4361ee',
+                      backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                      fill: true,
+                      tension: 0.3,
+                      pointRadius: 0,
+                      pointHoverRadius: 4,
+                    },
+                    {
+                      label: '투자금액',
+                      data: backtestResult.chartData.map(d => d.invested),
+                      borderColor: '#9ca3af',
+                      backgroundColor: 'transparent',
+                      borderDash: [5, 5],
+                      tension: 0,
+                      pointRadius: 0,
+                      pointHoverRadius: 4,
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  interaction: {
+                    mode: 'index',
+                    intersect: false,
+                  },
+                  plugins: {
+                    legend: {
+                      position: 'top',
+                      labels: {
+                        usePointStyle: true,
+                        padding: 15,
+                        font: { size: 12 },
+                      },
+                    },
+                    tooltip: {
+                      callbacks: {
+                        label: (context) => {
+                          const value = context.parsed.y ?? 0
+                          if (value >= 10000) {
+                            return `${context.dataset.label}: ${(value / 10000).toFixed(1)}억원`
+                          }
+                          return `${context.dataset.label}: ${value.toLocaleString()}만원`
+                        },
+                      },
+                    },
+                  },
+                  scales: {
+                    x: {
+                      grid: { display: false },
+                      ticks: {
+                        maxTicksLimit: 6,
+                        font: { size: 11 },
+                      },
+                    },
+                    y: {
+                      beginAtZero: true,
+                      ticks: {
+                        callback: (value) => {
+                          const num = Number(value)
+                          if (num >= 10000) return `${(num / 10000).toFixed(1)}억`
+                          return `${num}만`
+                        },
+                        font: { size: 11 },
+                      },
+                      grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
+        )}
       </section>
 
       {/* 푸터 */}
