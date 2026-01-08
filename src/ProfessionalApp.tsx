@@ -421,7 +421,7 @@ function ProfessionalApp() {
   }
 
   // Render step header
-  const renderStepHeader = (stepNumber: number, title: string) => (
+  const renderStepHeader = (_stepNumber: number, _title: string) => (
     <header className="prof-step-header">
       <button className="prof-back-btn" onClick={goToPrevStep} disabled={currentStep === 1}>
         뒤로
@@ -1255,7 +1255,7 @@ function ProfessionalApp() {
 
     // Conservative annual return rate (3% to show urgency)
     const annualReturn = 0.03
-    const retirementReturn = 0.02 // Even more conservative post-retirement
+    // const retirementReturn = 0.02 // Even more conservative post-retirement
 
     // Generate projection data
     const years: number[] = []

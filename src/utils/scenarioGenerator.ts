@@ -9,7 +9,6 @@ import type {
   ThreeMonthRoadmap,
   PortfolioItem,
   TimelineAction,
-  ActionCategory,
 } from '../types/professional'
 import { etfProducts } from './portfolio'
 
@@ -88,7 +87,7 @@ function calculateEventImpact(
 // Generate user state from input
 export function generateUserState(
   data: FinancialInputData,
-  preferences: UserPreferences
+  _preferences: UserPreferences
 ): UserCurrentState {
   const currentAsset = calculateFinancialAsset(data)
   const monthlySaving = calculateMonthlySavings(data)

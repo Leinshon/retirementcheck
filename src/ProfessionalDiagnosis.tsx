@@ -299,22 +299,6 @@ const getSlideInsightsData = (userName: string): Record<number, any> => ({
   }
 })
 
-// Slide별 메모 플레이스홀더
-const memoPlaceholders: Record<number, string> = {
-  0: '보고서 전반에 대한 궁금한 점이나 추가 분석 요청 사항을 기록해 주세요',
-  1: '순자산 분포 분석에 대해 궁금한 점이나 의견은?',
-  2: '자산현황에 대해 궁금한 점은?',
-  3: '부채현황에 대해 궁금한 점은?',
-  4: '월별 가용 현금흐름에 대해 궁금한 점은?',
-  5: '지출 구조에 대해 궁금한 점은?',
-  6: '현재 재무현황에 대해 궁금한 점은?',
-  7: '목표 은퇴자산 50억원 달성을 위한 추가 전략이나 궁금한 점은?',
-  8: '자산 성장 시뮬레이션에 대한 질문이나 의견을 남겨주세요',
-  9: '현금흐름 진단에 대한 궁금한 점은?',
-  10: '예상 월 수령액에 대해 궁금한 점이나 추가 시뮬레이션 요청은?',
-  11: '수령액 구성에 대해 궁금한 점은?',
-  12: '다음 단계 실행 전 확인하고 싶은 내용은?'
-}
 
 function ProfessionalDiagnosis() {
   const location = useLocation()
@@ -324,9 +308,6 @@ function ProfessionalDiagnosis() {
   // State management
   const [currentSlide, setCurrentSlide] = useState(0)
   const [reportDate] = useState(new Date())
-  const [carouselIndices, setCarouselIndices] = useState<Record<number, number>>({
-    0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0
-  })
 
   // Chat-style insights state
   const [messageProgress, setMessageProgress] = useState<Record<number, number>>({
@@ -423,29 +404,6 @@ function ProfessionalDiagnosis() {
   // Get slide insights data with user name
   const slideInsightsData = getSlideInsightsData(userState?.name || '고객')
 
-  // Carousel navigation handlers
-  const handleCarouselNext = (slideIndex: number) => {
-    const totalSlides = slideInsightsData[slideIndex].slides.length
-    setCarouselIndices(prev => ({
-      ...prev,
-      [slideIndex]: (prev[slideIndex] + 1) % totalSlides
-    }))
-  }
-
-  const handleCarouselPrev = (slideIndex: number) => {
-    const totalSlides = slideInsightsData[slideIndex].slides.length
-    setCarouselIndices(prev => ({
-      ...prev,
-      [slideIndex]: (prev[slideIndex] - 1 + totalSlides) % totalSlides
-    }))
-  }
-
-  const handleCarouselGoTo = (slideIndex: number, carouselIndex: number) => {
-    setCarouselIndices(prev => ({
-      ...prev,
-      [slideIndex]: carouselIndex
-    }))
-  }
 
   // User message handlers
   const handleSendMessage = () => {
@@ -1549,7 +1507,7 @@ function ProfessionalDiagnosis() {
 
         {/* Chat Message List */}
         <div className="chat-message-list" ref={chatScrollRef} role="log" aria-live="polite" aria-atomic="false">
-          {allMessages.map((item, msgIdx) =>
+          {allMessages.map((item) =>
             item.type === 'expert' ? (
               <div
                 key={`expert-${item.timestamp}`}

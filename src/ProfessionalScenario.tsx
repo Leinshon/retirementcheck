@@ -23,6 +23,8 @@ import {
   type ActionStatus,
   type UserCurrentState,
   type ThreeMonthRoadmap,
+  type MonthBlock,
+  type PortfolioItem,
 } from './data/demoScenarios'
 import './ProfessionalScenario.css'
 
@@ -71,7 +73,7 @@ function ProfessionalScenario(props?: ProfessionalScenarioProps) {
   const [activeTab, setActiveTab] = useState<0 | 1>(0)
   const [actionStatuses, setActionStatuses] = useState<Record<string, ActionStatus>>({})
 
-  const selectedScenario = scenarios.find(s => s.id === selectedScenarioId)
+  const selectedScenario = scenarios.find((s: Scenario) => s.id === selectedScenarioId)
   const roadmap = selectedScenarioId ? roadmaps[selectedScenarioId] : null
 
   // 시나리오 선택 핸들러
@@ -334,7 +336,7 @@ function ProfessionalScenario(props?: ProfessionalScenarioProps) {
 
       {/* 모바일 탭 */}
       <div className="mobile-tabs">
-        {scenarios.map((scenario, idx) => (
+        {scenarios.map((scenario: Scenario, idx: number) => (
           <button
             key={scenario.id}
             className={`tab-btn ${activeTab === idx ? 'active' : ''}`}
@@ -348,7 +350,7 @@ function ProfessionalScenario(props?: ProfessionalScenarioProps) {
       {/* 시나리오 비교 */}
       <section className="scenarios-comparison">
         <div className="scenarios-grid">
-          {scenarios.map((scenario, idx) => renderScenarioCard(scenario, idx))}
+          {scenarios.map((scenario: Scenario, idx: number) => renderScenarioCard(scenario, idx))}
         </div>
       </section>
     </>
@@ -581,7 +583,7 @@ function ProfessionalScenario(props?: ProfessionalScenarioProps) {
 
           {/* 타임라인 진행 바 */}
           <div className="timeline-progress">
-            {roadmap.months.map((month, idx) => (
+            {roadmap.months.map((month: MonthBlock, idx: number) => (
               <div key={month.month} className="timeline-step">
                 <div className={`step-dot ${idx === 0 ? 'active' : ''}`}>
                   {month.month}
@@ -594,13 +596,13 @@ function ProfessionalScenario(props?: ProfessionalScenarioProps) {
           </div>
 
           {/* 월별 액션 블록 */}
-          {roadmap.months.map(month => (
+          {roadmap.months.map((month: MonthBlock) => (
             <div key={month.month} className="month-block">
               <div className="month-header">
                 <h3>{month.month}월차: {month.theme}</h3>
               </div>
               <div className="actions-list">
-                {month.actions.map(action => {
+                {month.actions.map((action: TimelineAction) => {
                   const status = getActionStatus(action)
                   const style = statusStyles[status]
                   return (
@@ -643,7 +645,7 @@ function ProfessionalScenario(props?: ProfessionalScenarioProps) {
             <p className="portfolio-summary">{roadmap.investmentGuide.portfolioSummary}</p>
             {renderPortfolioBar(selectedScenario)}
             <div className="portfolio-legend">
-              {selectedScenario.portfolioAllocation.map((item, idx) => (
+              {selectedScenario.portfolioAllocation.map((item: PortfolioItem, idx: number) => (
                 <span key={idx} className="legend-item">
                   <span className="legend-dot" style={{ backgroundColor: item.color }} />
                   {item.name} ({item.ticker}) {item.ratio}%
@@ -655,7 +657,7 @@ function ProfessionalScenario(props?: ProfessionalScenarioProps) {
           <div className="guide-card">
             <h3>Step-by-Step 가이드</h3>
             <ol className="step-list">
-              {roadmap.investmentGuide.stepByStepGuide.map((step, idx) => (
+              {roadmap.investmentGuide.stepByStepGuide.map((step: string, idx: number) => (
                 <li key={idx}>{step}</li>
               ))}
             </ol>
@@ -664,7 +666,7 @@ function ProfessionalScenario(props?: ProfessionalScenarioProps) {
           <div className="guide-card caution">
             <h3>주의사항</h3>
             <ul className="caution-list">
-              {roadmap.investmentGuide.cautionNotes.map((note, idx) => (
+              {roadmap.investmentGuide.cautionNotes.map((note: string, idx: number) => (
                 <li key={idx}>{note}</li>
               ))}
             </ul>
