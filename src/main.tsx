@@ -19,7 +19,7 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />} />
-        <Route path="/x9f2k1" element={<SimpleApp />} />
+        <Route path="/simple" element={<SimpleApp />} />
         <Route path="/m3p7q8" element={<ProfessionalScenario />} />
         <Route path="/v5n8w2" element={<ProfessionalApp />} />
         <Route path="/v5n8w2/d4h6j9" element={<ProfessionalDiagnosis />} />
