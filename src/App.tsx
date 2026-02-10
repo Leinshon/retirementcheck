@@ -1955,7 +1955,10 @@ ${data.isMarried && data.spouseIncome ? `배우자 월 소득: ${formatCurrency(
             <>
               <div className="savings-rate-section">
                 <div className="savings-rate-header">
-                  <span className="savings-rate-label">저축률</span>
+                  <div className="savings-rate-label-wrap">
+                    <span className="savings-rate-label">저축률</span>
+                    <span className="savings-rate-desc">소득 대비 저축 비율</span>
+                  </div>
                   <span className={`savings-rate-value ${
                     monthlySavings / totalMonthlyIncome >= 0.3 ? 'excellent' :
                     monthlySavings / totalMonthlyIncome >= 0.2 ? 'good' :

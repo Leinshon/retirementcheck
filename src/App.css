@@ -2659,7 +2659,7 @@ h2 {
 
 .cashflow-summary {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
@@ -2684,6 +2684,8 @@ h2 {
   flex-direction: column;
   gap: 0.5rem;
   border: 1px solid #e8e8e8;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .cashflow-item.highlight {
@@ -2700,12 +2702,14 @@ h2 {
   font-size: 0.75rem;
   color: #666;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .cashflow-value {
   font-size: 1.1rem;
   font-weight: 700;
   color: #1a1a2e;
+  white-space: nowrap;
 }
 
 .cashflow-value.positive {
@@ -2737,14 +2741,25 @@ h2 {
   margin-bottom: 1rem;
 }
 
+.savings-rate-label-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .savings-rate-label {
   font-size: 0.9rem;
   color: #666;
   font-weight: 500;
 }
 
+.savings-rate-desc {
+  font-size: 0.75rem;
+  color: #999;
+}
+
 .savings-rate-value {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
 }
 
