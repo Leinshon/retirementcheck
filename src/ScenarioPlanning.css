@@ -1,0 +1,1444 @@
+/* ScenarioPlanning.css - 라이트 테마 스타일 */
+
+.scenario-planning-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  background: #f7fafc;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #1a202c;
+}
+
+/* 헤더 */
+.sp-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.sp-header-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a365d;
+  margin-bottom: 8px;
+}
+
+.sp-header-subtitle {
+  font-size: 15px;
+  color: #718096;
+}
+
+/* 고객 정보 요약 */
+.sp-customer-summary {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.sp-customer-name {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a365d;
+  margin-bottom: 16px;
+}
+
+.sp-customer-stats {
+  display: flex;
+  gap: 24px;
+}
+
+.sp-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sp-stat-label {
+  font-size: 13px;
+  color: #718096;
+}
+
+.sp-stat-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c5282;
+}
+
+/* 섹션 공통 */
+.sp-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.sp-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a365d;
+  margin: 0 0 8px 0;
+}
+
+.sp-section-desc {
+  font-size: 14px;
+  color: #718096;
+  margin: 0 0 20px 0;
+}
+
+.sp-section-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 라벨 */
+.sp-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #4a5568;
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* 슬라이더 */
+.sp-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sp-slider-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sp-slider {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: #e2e8f0;
+  outline: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.sp-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #3182ce;
+  cursor: pointer;
+  border: 3px solid white;
+  box-shadow: 0 2px 6px rgba(49, 130, 206, 0.3);
+}
+
+.sp-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #3182ce;
+  cursor: pointer;
+  border: 3px solid white;
+  box-shadow: 0 2px 6px rgba(49, 130, 206, 0.3);
+}
+
+.sp-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #a0aec0;
+}
+
+.sp-slider-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #3182ce;
+  text-align: center;
+}
+
+.sp-retirement-info {
+  font-size: 14px;
+  color: #718096;
+  text-align: center;
+  padding: 12px;
+  background: #f7fafc;
+  border-radius: 8px;
+}
+
+/* 이벤트 리스트 */
+.sp-event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sp-event-empty {
+  text-align: center;
+  padding: 32px;
+  color: #a0aec0;
+  font-size: 14px;
+  background: #f7fafc;
+  border-radius: 8px;
+}
+
+/* 체크리스트 스타일 */
+.sp-event-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sp-event-check-item {
+  background: #f7fafc;
+  border-radius: 8px;
+  padding: 16px;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.sp-event-check-item.enabled {
+  background: #ebf8ff;
+  border-color: #3182ce;
+}
+
+.sp-event-check-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sp-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.sp-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #3182ce;
+}
+
+.sp-event-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a365d;
+}
+
+.sp-event-desc {
+  font-size: 13px;
+  color: #718096;
+  margin-left: 32px;
+}
+
+.sp-event-check-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* 기타 지출 */
+.sp-custom-events {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed #cbd5e0;
+}
+
+.sp-custom-events-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 12px;
+}
+
+.sp-event-item {
+  background: #f7fafc;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sp-event-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sp-event-details {
+  justify-content: space-between;
+}
+
+/* 셀렉트 */
+.sp-select {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: white;
+  color: #1a202c;
+  cursor: pointer;
+}
+
+.sp-select:focus {
+  outline: none;
+  border-color: #3182ce;
+}
+
+/* 인풋 */
+.sp-input {
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: white;
+  color: #1a202c;
+}
+
+.sp-input:focus {
+  outline: none;
+  border-color: #3182ce;
+}
+
+.sp-input-custom {
+  flex: 1;
+}
+
+.sp-input-years {
+  width: 60px;
+  text-align: center;
+}
+
+.sp-input-amount {
+  width: 100px;
+  text-align: right;
+}
+
+/* 삭제 버튼 */
+.sp-btn-remove {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  background: #fed7d7;
+  color: #c53030;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.sp-btn-remove:hover {
+  background: #feb2b2;
+}
+
+/* 이벤트 타이밍 */
+.sp-event-timing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sp-years-label {
+  font-size: 14px;
+  color: #4a5568;
+}
+
+.sp-expected-age {
+  font-size: 14px;
+  color: #3182ce;
+  font-weight: 500;
+}
+
+/* 이벤트 금액 */
+.sp-event-amount {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sp-amount-unit {
+  font-size: 14px;
+  color: #4a5568;
+}
+
+/* 추가 버튼 */
+.sp-btn-add {
+  width: 100%;
+  padding: 12px;
+  border: 2px dashed #cbd5e0;
+  border-radius: 8px;
+  background: transparent;
+  color: #718096;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.sp-btn-add:hover {
+  border-color: #3182ce;
+  color: #3182ce;
+}
+
+/* 이벤트 요약 */
+.sp-event-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #ebf8ff;
+  border-radius: 8px;
+}
+
+.sp-summary-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2c5282;
+}
+
+.sp-summary-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2b6cb0;
+}
+
+/* 토글 그룹 */
+.sp-toggle-group {
+  display: flex;
+  gap: 12px;
+}
+
+.sp-toggle-btn {
+  flex: 1;
+  padding: 14px 24px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  color: #718096;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.sp-toggle-btn:hover {
+  border-color: #cbd5e0;
+}
+
+.sp-toggle-btn.active {
+  border-color: #3182ce;
+  background: #ebf8ff;
+  color: #2b6cb0;
+}
+
+/* 수익활동 규모 */
+.sp-income-scale {
+  margin-top: 20px;
+}
+
+.sp-scale-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sp-scale-option {
+  padding: 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.sp-scale-option:hover {
+  border-color: #cbd5e0;
+}
+
+.sp-scale-option.active {
+  border-color: #3182ce;
+  background: #ebf8ff;
+}
+
+.sp-scale-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.sp-scale-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a365d;
+}
+
+.sp-scale-range {
+  font-size: 14px;
+  color: #3182ce;
+  font-weight: 500;
+}
+
+.sp-scale-desc {
+  font-size: 13px;
+  color: #718096;
+}
+
+/* 은퇴 후 생활비 비율 */
+.sp-expense-ratio-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.sp-ratio-option {
+  flex: 1;
+  min-width: 80px;
+  padding: 12px 8px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.sp-ratio-option:hover {
+  border-color: #cbd5e0;
+}
+
+.sp-ratio-option.active {
+  border-color: #3182ce;
+  background: #ebf8ff;
+}
+
+.sp-ratio-value {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: #2c5282;
+  margin-bottom: 4px;
+}
+
+.sp-ratio-desc {
+  display: block;
+  font-size: 11px;
+  color: #718096;
+}
+
+.sp-expense-ratio-info {
+  font-size: 14px;
+  color: #718096;
+  text-align: center;
+  padding: 12px;
+  background: #f7fafc;
+  border-radius: 8px;
+}
+
+.sp-expense-ratio-info strong {
+  color: #3182ce;
+}
+
+/* 투자/부채 리스트 */
+.sp-investment-list,
+.sp-debt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sp-investment-item,
+.sp-debt-item {
+  background: #f7fafc;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sp-field-label {
+  font-size: 12px;
+  color: #718096;
+  margin-right: 8px;
+}
+
+.sp-investment-amount,
+.sp-investment-contribution,
+.sp-debt-amount,
+.sp-debt-rate,
+.sp-debt-payment {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sp-input-contribution,
+.sp-input-rate,
+.sp-input-payment {
+  width: 80px;
+  text-align: right;
+}
+
+/* 부채 요약 */
+.sp-debt-summary {
+  background: #fff5f5;
+}
+
+.sp-debt-summary .sp-summary-label {
+  color: #c53030;
+}
+
+.sp-debt-value {
+  color: #c53030 !important;
+}
+
+/* 저장 버튼 영역 */
+.sp-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.sp-btn-save {
+  width: 100%;
+  max-width: 300px;
+  padding: 16px 32px;
+  border: none;
+  border-radius: 8px;
+  background: #3182ce;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sp-btn-save:hover {
+  background: #2b6cb0;
+}
+
+.sp-save-message {
+  font-size: 14px;
+  color: #38a169;
+  font-weight: 500;
+}
+
+.sp-btn-copy {
+  padding: 12px 24px;
+  border: 1px solid #3182ce;
+  border-radius: 8px;
+  background: #ebf8ff;
+  color: #2b6cb0;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sp-btn-copy:hover {
+  background: #bee3f8;
+}
+
+/* 저장 후 요약 섹션 */
+.sp-summary-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.sp-summary-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a365d;
+  margin: 0 0 16px 0;
+}
+
+.sp-summary-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sp-summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.sp-summary-row:last-child {
+  border-bottom: none;
+}
+
+.sp-summary-key {
+  font-size: 14px;
+  color: #718096;
+}
+
+.sp-summary-val {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a202c;
+}
+
+.sp-summary-events {
+  padding: 12px;
+  background: #f7fafc;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #4a5568;
+  line-height: 1.8;
+}
+
+.sp-summary-event {
+  padding-left: 8px;
+}
+
+/* 지출 절감 의향 */
+.sp-reduction-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sp-reduction-item {
+  background: #f7fafc;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.sp-reduction-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 10px;
+}
+
+.sp-reduction-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a365d;
+}
+
+.sp-reduction-desc {
+  font-size: 12px;
+  color: #718096;
+}
+
+.sp-reduction-levels {
+  display: flex;
+  gap: 8px;
+}
+
+.sp-reduction-btn {
+  flex: 1;
+  padding: 8px 4px;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sp-reduction-btn:hover {
+  border-color: #cbd5e0;
+}
+
+.sp-reduction-btn.active {
+  border-color: #3182ce;
+  background: #ebf8ff;
+}
+
+.sp-reduction-btn-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2c5282;
+}
+
+.sp-reduction-btn-percent {
+  font-size: 11px;
+  color: #718096;
+}
+
+.sp-reduction-summary {
+  padding: 12px 16px;
+  background: #f7fafc;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.sp-reduction-none {
+  font-size: 14px;
+  color: #718096;
+}
+
+.sp-reduction-active {
+  font-size: 14px;
+  color: #2b6cb0;
+  font-weight: 500;
+}
+
+/* 소득 증대 의향 */
+.sp-boost-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sp-boost-item {
+  background: #f7fafc;
+  border-radius: 8px;
+  padding: 14px 16px;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.sp-boost-item.enabled {
+  background: #f0fff4;
+  border-color: #38a169;
+}
+
+.sp-boost-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sp-boost-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a365d;
+}
+
+.sp-boost-desc {
+  font-size: 12px;
+  color: #718096;
+  margin-left: 32px;
+}
+
+.sp-boost-details {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.sp-boost-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #f0fff4;
+  border-radius: 8px;
+}
+
+.sp-boost-summary .sp-summary-label {
+  color: #276749;
+}
+
+.sp-boost-summary .sp-summary-value {
+  color: #38a169;
+}
+
+/* 단기 재무 목표 */
+.sp-goal-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sp-goal-item {
+  background: #f7fafc;
+  border-radius: 8px;
+  padding: 14px 16px;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.sp-goal-item.enabled {
+  background: #fef3c7;
+  border-color: #d97706;
+}
+
+.sp-goal-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sp-goal-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a365d;
+}
+
+.sp-goal-desc {
+  font-size: 12px;
+  color: #718096;
+  margin-left: 32px;
+}
+
+.sp-goal-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.sp-goal-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sp-goal-summary {
+  padding: 12px 16px;
+  background: #fef3c7;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.sp-goal-count {
+  font-size: 14px;
+  color: #92400e;
+  font-weight: 500;
+}
+
+/* 수입/자산 이벤트 */
+.sp-income-event-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sp-income-event-item {
+  background: #f7fafc;
+  border-radius: 8px;
+  padding: 16px;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.sp-income-event-item.enabled.income {
+  background: #f0fff4;
+  border-color: #38a169;
+}
+
+.sp-income-event-item.enabled.expense {
+  background: #fff5f5;
+  border-color: #e53e3e;
+}
+
+.sp-income-event-item.custom {
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.sp-income-event-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sp-income-event-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a365d;
+}
+
+.sp-income-event-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.sp-income-event-tag.income {
+  background: #c6f6d5;
+  color: #276749;
+}
+
+.sp-income-event-tag.expense {
+  background: #fed7d7;
+  color: #c53030;
+}
+
+.sp-income-event-desc {
+  font-size: 13px;
+  color: #718096;
+  margin-left: 32px;
+}
+
+.sp-income-event-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.sp-income-event-timing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sp-income-event-amount {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sp-income-event-recurring {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sp-recurring-info {
+  font-size: 12px;
+  color: #718096;
+}
+
+.sp-income-event-tax {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sp-tax-hint {
+  font-size: 11px;
+  color: #a0aec0;
+}
+
+.sp-custom-income-events {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed #cbd5e0;
+}
+
+.sp-income-event-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background: #f7fafc;
+  border-radius: 8px;
+}
+
+.sp-summary-row-inline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sp-summary-value.income {
+  color: #38a169;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.sp-summary-value.expense {
+  color: #e53e3e;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+/* 요약 섹션 수입/지출 색상 */
+.sp-summary-event.income {
+  color: #276749;
+}
+
+.sp-summary-event.expense {
+  color: #c53030;
+}
+
+/* 주택 지역 선택 */
+.sp-housing-region {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.sp-select-region {
+  min-width: 140px;
+}
+
+/* 시나리오 선택 섹션 */
+.sp-scenario-selection {
+  background: linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%);
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 32px;
+}
+
+.sp-scenario-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a365d;
+  margin: 0 0 8px;
+}
+
+.sp-scenario-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0 0 24px;
+}
+
+.sp-scenario-category {
+  margin-bottom: 28px;
+}
+
+.sp-scenario-category:last-of-type {
+  margin-bottom: 0;
+}
+
+.sp-scenario-category-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #334155;
+  margin: 0 0 6px;
+}
+
+.sp-scenario-category-desc {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 14px;
+}
+
+.sp-scenario-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.sp-scenario-options.two-cols {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.sp-scenario-option {
+  background: #fff;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sp-scenario-option:hover {
+  border-color: #94a3b8;
+}
+
+.sp-scenario-option.selected {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.sp-scenario-option-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sp-scenario-option-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.sp-scenario-option-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+.sp-scenario-option-rate {
+  font-size: 12px;
+  font-weight: 600;
+  color: #059669;
+}
+
+.sp-scenario-option-impact {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.sp-scenario-option-impact.positive {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.sp-scenario-option-impact.negative {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.sp-scenario-option-strategy {
+  font-size: 11px;
+  font-weight: 500;
+  color: #6366f1;
+}
+
+.sp-scenario-option-desc {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.sp-scenario-option.selected .sp-scenario-option-desc {
+  color: #475569;
+}
+
+/* 시나리오 선택 요약 */
+.sp-scenario-summary {
+  margin-top: 24px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.sp-scenario-summary-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #334155;
+  margin: 0 0 14px;
+}
+
+.sp-scenario-summary-items {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.sp-scenario-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sp-summary-item-label {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.sp-summary-item-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* 은퇴 시점 유연성 */
+.sp-retirement-flexibility {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sp-retirement-current {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 16px;
+  background: #f0f9ff;
+  border-radius: 8px;
+}
+
+.sp-retirement-current-label {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.sp-retirement-current-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e40af;
+}
+
+.sp-retirement-current-info {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.sp-flexibility-question {
+  font-size: 15px;
+  color: #334155;
+  margin: 8px 0 4px;
+}
+
+.sp-flexibility-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.sp-flexibility-option {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sp-flexibility-option:hover {
+  border-color: #94a3b8;
+}
+
+.sp-flexibility-option.selected {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.sp-flexibility-option-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.sp-flexibility-option-desc {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.sp-flexibility-option.selected .sp-flexibility-option-desc {
+  color: #475569;
+}
+
+/* 기타 참고사항 */
+.sp-additional-notes {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 14px;
+  font-family: inherit;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  resize: vertical;
+  min-height: 80px;
+  background: #f8fafc;
+  color: #1e293b;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.sp-additional-notes:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background: #fff;
+}
+
+.sp-additional-notes::placeholder {
+  color: #94a3b8;
+}
+
+/* 반응형 */
+@media (max-width: 600px) {
+  .scenario-planning-container {
+    padding: 24px 16px;
+  }
+
+  .sp-header-title {
+    font-size: 24px;
+  }
+
+  .sp-customer-stats {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .sp-event-details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .sp-toggle-group {
+    flex-direction: column;
+  }
+
+  .sp-expense-ratio-options {
+    flex-wrap: wrap;
+  }
+
+  .sp-ratio-option {
+    min-width: calc(33% - 8px);
+  }
+
+  .sp-investment-amount,
+  .sp-investment-contribution,
+  .sp-debt-amount,
+  .sp-debt-rate,
+  .sp-debt-payment {
+    flex-wrap: wrap;
+  }
+
+  .sp-reduction-levels {
+    flex-wrap: wrap;
+  }
+
+  .sp-reduction-btn {
+    min-width: calc(50% - 4px);
+  }
+
+  .sp-scenario-selection {
+    padding: 20px;
+  }
+
+  .sp-scenario-options {
+    grid-template-columns: 1fr;
+  }
+
+  .sp-scenario-options.two-cols {
+    grid-template-columns: 1fr;
+  }
+
+  .sp-scenario-summary-items {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .sp-flexibility-options {
+    grid-template-columns: 1fr;
+  }
+
+  .sp-retirement-current {
+    flex-wrap: wrap;
+  }
+}

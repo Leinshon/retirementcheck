@@ -1,0 +1,612 @@
+.lifecycle-demo {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  background: #f7fafc;
+  min-height: 100vh;
+}
+
+.lifecycle-demo h1 {
+  font-size: 24px;
+  color: #1a365d;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.demo-section {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 32px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.demo-section h2 {
+  font-size: 16px;
+  color: #1a365d;
+  margin: 0 0 8px 0;
+}
+
+.demo-desc {
+  font-size: 12px;
+  color: #718096;
+  margin: 0 0 20px 0;
+}
+
+/* 제안 1: 세로 리스트 + 금액 바 */
+.proposal-1 {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.proposal-1 .event-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.proposal-1 .event-info {
+  width: 140px;
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.proposal-1 .event-age {
+  font-size: 11px;
+  color: #718096;
+  width: 32px;
+}
+
+.proposal-1 .event-name {
+  font-size: 12px;
+  color: #1a202c;
+}
+
+.proposal-1 .event-bar-container {
+  flex: 1;
+  height: 24px;
+  background: #edf2f7;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.proposal-1 .event-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #2c5282, #3182ce);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  min-width: 50px;
+}
+
+.proposal-1 .bar-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+}
+
+.proposal-1 .total-row {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 12px;
+  margin-top: 8px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a365d;
+}
+
+/* 제안 2: 연도별 블록 */
+.proposal-2 .year-blocks {
+  display: flex;
+  gap: 4px;
+}
+
+.proposal-2 .year-block {
+  flex: 1;
+  min-height: 80px;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.proposal-2 .year-block.has-event {
+  background: #ebf8ff;
+  border-color: #90cdf4;
+}
+
+.proposal-2 .year-block.retirement {
+  background: #fef3c7;
+  border-color: #f59e0b;
+}
+
+.proposal-2 .block-age {
+  font-size: 10px;
+  font-weight: 600;
+  color: #718096;
+}
+
+.proposal-2 .year-block.has-event .block-age {
+  color: #2c5282;
+}
+
+.proposal-2 .block-event {
+  font-size: 9px;
+  color: #1a202c;
+  line-height: 1.3;
+}
+
+.proposal-2 .block-cost {
+  display: block;
+  font-weight: 600;
+  color: #2c5282;
+}
+
+.proposal-2 .year-legend {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #718096;
+}
+
+/* 제안 3: 누적 비용 그래프 */
+.proposal-3 .cumulative-chart {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  grid-template-rows: 1fr auto;
+  gap: 4px;
+  height: 140px;
+}
+
+.proposal-3 .chart-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 9px;
+  color: #718096;
+  text-align: right;
+  padding-right: 4px;
+}
+
+.proposal-3 .chart-content {
+  position: relative;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.proposal-3 .chart-content svg {
+  width: 100%;
+  height: 100%;
+}
+
+.proposal-3 .chart-x-axis {
+  grid-column: 2;
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  color: #718096;
+  padding: 0 4px;
+}
+
+.proposal-3 .chart-events {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.proposal-3 .chart-event-dot {
+  position: absolute;
+  bottom: 10px;
+  width: 6px;
+  height: 6px;
+  background: #2c5282;
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+
+/* 제안 4: 카드 그리드 */
+.proposal-4 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.proposal-4 .event-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.proposal-4 .card-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: #1a365d;
+  color: white;
+}
+
+.proposal-4 .event-card.no-cost .card-header {
+  background: #d69e2e;
+}
+
+.proposal-4 .card-age {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.proposal-4 .card-years {
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+.proposal-4 .card-body {
+  padding: 12px 10px;
+}
+
+.proposal-4 .card-event {
+  font-size: 12px;
+  font-weight: 500;
+  color: #1a202c;
+  margin-bottom: 4px;
+}
+
+.proposal-4 .card-cost {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2c5282;
+}
+
+.proposal-4 .card-milestone {
+  font-size: 11px;
+  color: #d69e2e;
+  font-weight: 600;
+}
+
+.proposal-4 .card-progress {
+  height: 3px;
+  background: #edf2f7;
+}
+
+.proposal-4 .progress-bar {
+  height: 100%;
+  background: #3182ce;
+}
+
+/* 제안 5: 타임라인 + 자산 잔액 */
+.proposal-5 {
+  padding: 0;
+}
+
+.proposal-5 .asset-timeline {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 8px;
+}
+
+.proposal-5 .timeline-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 9px;
+  color: #718096;
+  text-align: right;
+  padding-right: 4px;
+}
+
+.proposal-5 .timeline-chart {
+  position: relative;
+  height: 100px;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.proposal-5 .timeline-chart svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.proposal-5 .timeline-events {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  display: flex;
+}
+
+.proposal-5 .t-event {
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.proposal-5 .t-label {
+  font-size: 8px;
+  color: #1a365d;
+  background: white;
+  padding: 1px 4px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.proposal-5 .t-event.retirement .t-label {
+  color: #e53e3e;
+  font-weight: 600;
+}
+
+.proposal-5 .timeline-x-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  margin-left: 44px;
+  font-size: 9px;
+  color: #718096;
+}
+
+/* 제안 6: 도넛 차트 + 리스트 */
+.proposal-6 {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.proposal-6 .donut-container {
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
+}
+
+.proposal-6 .donut-container svg {
+  width: 100%;
+  height: 100%;
+}
+
+.proposal-6 .donut-legend {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.proposal-6 .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.proposal-6 .legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.proposal-6 .legend-name {
+  flex: 1;
+  color: #1a202c;
+}
+
+.proposal-6 .legend-percent {
+  color: #718096;
+  width: 36px;
+  text-align: right;
+}
+
+.proposal-6 .legend-amount {
+  font-weight: 600;
+  color: #1a365d;
+  width: 48px;
+  text-align: right;
+}
+
+/* 제안 7: 은퇴 전/후 분리 */
+.proposal-7 {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+}
+
+.proposal-7 .split-section {
+  flex: 1;
+  padding: 16px;
+  background: #f7fafc;
+  border-radius: 6px;
+}
+
+.proposal-7 .split-section.before {
+  background: #ebf8ff;
+}
+
+.proposal-7 .split-section.after {
+  background: #fef3c7;
+}
+
+.proposal-7 .split-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.proposal-7 .split-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.proposal-7 .split-years {
+  font-size: 10px;
+  color: #718096;
+}
+
+.proposal-7 .split-total {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a365d;
+  margin-bottom: 12px;
+}
+
+.proposal-7 .split-section.after .split-total {
+  color: #92400e;
+}
+
+.proposal-7 .split-events {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.proposal-7 .split-event {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #4a5568;
+}
+
+.proposal-7 .split-divider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+}
+
+.proposal-7 .divider-line {
+  width: 2px;
+  flex: 1;
+  background: #e2e8f0;
+}
+
+.proposal-7 .divider-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #e53e3e;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+/* 제안 8: 남은 기간 강조 */
+.proposal-8 {
+  display: flex;
+  gap: 20px;
+}
+
+.proposal-8 .next-event-highlight {
+  flex: 1;
+  background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+  border-radius: 8px;
+  padding: 20px;
+  color: white;
+  text-align: center;
+}
+
+.proposal-8 .next-badge {
+  font-size: 10px;
+  background: rgba(255,255,255,0.2);
+  padding: 4px 10px;
+  border-radius: 12px;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.proposal-8 .next-countdown {
+  margin-bottom: 16px;
+}
+
+.proposal-8 .countdown-number {
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.proposal-8 .countdown-unit {
+  font-size: 16px;
+  opacity: 0.8;
+  margin-left: 4px;
+}
+
+.proposal-8 .next-details {
+  text-align: center;
+}
+
+.proposal-8 .next-name {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.proposal-8 .next-cost {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.proposal-8 .next-monthly {
+  font-size: 11px;
+  opacity: 0.8;
+  background: rgba(255,255,255,0.1);
+  padding: 6px 12px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.proposal-8 .later-events {
+  flex: 1;
+}
+
+.proposal-8 .later-title {
+  font-size: 11px;
+  color: #718096;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.proposal-8 .later-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.proposal-8 .later-item:last-child {
+  border-bottom: none;
+}
+
+.proposal-8 .later-years {
+  font-size: 11px;
+  color: #718096;
+  width: 50px;
+}
+
+.proposal-8 .later-name {
+  flex: 1;
+  font-size: 12px;
+  color: #1a202c;
+}
+
+.proposal-8 .later-cost {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1a365d;
+}

@@ -1,0 +1,1157 @@
+/* 색상 변수 */
+:root {
+  --report-primary: #1a365d;
+  --report-secondary: #2c5282;
+  --report-accent: #3182ce;
+  --report-text: #1a202c;
+  --report-text-light: #718096;
+  --report-border: #e2e8f0;
+  --report-bg: #f7fafc;
+  --report-success: #38a169;
+  --report-warning: #d69e2e;
+  --report-danger: #e53e3e;
+}
+
+/* 기본 스타일 */
+.report-container {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #edf2f7;
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.report-page {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  background: white;
+  padding: 10mm 12mm;
+  box-sizing: border-box;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 인쇄 버튼 */
+.print-button {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 24px;
+  background: var(--report-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(26, 54, 93, 0.3);
+}
+
+.print-button:hover {
+  background: var(--report-secondary);
+}
+
+/* 헤더 */
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--report-primary);
+  margin-bottom: 12px;
+}
+
+.report-header-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.report-logo {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--report-accent);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.report-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--report-primary);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.report-header-right {
+  display: grid;
+  grid-template-columns: auto auto auto auto;
+  gap: 3px 14px;
+  font-size: 11px;
+  align-items: center;
+}
+
+.report-info-label {
+  color: var(--report-text-light);
+}
+
+.report-info-value {
+  font-weight: 600;
+  color: var(--report-text);
+}
+
+/* 섹션 공통 */
+.report-section {
+  margin-bottom: 12px;
+  padding: 12px 16px;
+  background: var(--report-bg);
+  border: 1px solid var(--report-border);
+  border-radius: 4px;
+}
+
+.report-section.half {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--report-primary);
+  margin: 0 0 10px 0;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--report-primary);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.section-title-en {
+  font-weight: 400;
+  color: var(--report-text-light);
+  font-size: 10px;
+}
+
+.section-note {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 400;
+  color: var(--report-text-light);
+}
+
+/* 현금흐름 분석 */
+.cashflow-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cashflow-item {
+  display: grid;
+  grid-template-columns: 80px 1fr 70px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid var(--report-border);
+  border-radius: 3px;
+}
+
+.cashflow-item.highlight {
+  margin-top: 2px;
+  background: white;
+  border: 1px solid var(--report-border);
+}
+
+.cashflow-item.highlight .cashflow-label {
+  color: var(--report-text);
+}
+
+.cashflow-item.highlight .cashflow-value.positive {
+  color: var(--report-success);
+}
+
+.cashflow-item.highlight .cashflow-value.negative {
+  color: var(--report-danger);
+}
+
+.cashflow-label {
+  font-size: 11px;
+  color: var(--report-text);
+  font-weight: 500;
+}
+
+.cashflow-bar-container {
+  height: 16px;
+  background: #e2e8f0;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.cashflow-bar {
+  height: 100%;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.cashflow-bar-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+}
+
+.cashflow-bar-label-outside {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--report-text);
+  white-space: nowrap;
+  margin-left: 6px;
+}
+
+.cashflow-bar.income {
+  background: var(--report-accent);
+}
+
+.cashflow-bar.expense {
+  background: #e57373;
+}
+
+.cashflow-bar.gap.positive {
+  background: var(--report-success);
+}
+
+.cashflow-bar.gap.negative {
+  background: var(--report-danger);
+}
+
+.cashflow-value {
+  font-size: 11px;
+  font-weight: 700;
+  text-align: right;
+  color: var(--report-text);
+}
+
+.cashflow-value.positive {
+  color: var(--report-success);
+}
+
+.cashflow-value.negative {
+  color: var(--report-danger);
+}
+
+.cashflow-note {
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--report-text-light);
+  text-align: right;
+}
+
+.cashflow-grade {
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.cashflow-percentile {
+  font-size: 9px;
+  font-weight: 500;
+  text-align: right;
+  color: var(--report-text-light);
+  white-space: nowrap;
+}
+
+.cashflow-grade.grade-excellent {
+  color: #276749;
+}
+
+.cashflow-grade.grade-good {
+  color: #38a169;
+}
+
+.cashflow-grade.grade-caution {
+  color: #d69e2e;
+}
+
+.cashflow-grade.grade-warning {
+  color: #dd6b20;
+}
+
+.cashflow-grade.grade-danger {
+  color: #c53030;
+}
+
+/* 2컬럼 레이아웃 */
+.report-two-column {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* 총수요/총공급 차트 */
+.demand-supply-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.ds-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ds-label {
+  width: 50px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--report-text);
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.ds-track {
+  flex: 1;
+  height: 24px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  display: flex;
+  overflow: hidden;
+  border: 1px solid var(--report-border);
+}
+
+.ds-bar {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ds-bar.demand {
+  background: var(--report-warning);
+  border-radius: 2px;
+}
+
+.ds-bar.supply {
+  background: var(--report-accent);
+  border-radius: 2px 0 0 2px;
+}
+
+.ds-bar.deficit {
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 3px,
+    rgba(229, 62, 62, 0.15) 3px,
+    rgba(229, 62, 62, 0.15) 6px
+  );
+  border: 1px dashed var(--report-danger);
+  border-left: none;
+  border-radius: 0 2px 2px 0;
+}
+
+.ds-value {
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+}
+
+.ds-bar.deficit .ds-value {
+  color: var(--report-danger);
+  text-shadow: none;
+}
+
+.ds-legend {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding-top: 8px;
+  border-top: 1px solid var(--report-border);
+}
+
+.ds-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--report-text-light);
+}
+
+.ds-legend-box {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.ds-legend-box.demand {
+  background: var(--report-warning);
+}
+
+.ds-legend-box.supply {
+  background: var(--report-accent);
+}
+
+.ds-legend-box.deficit {
+  border: 1px dashed var(--report-danger);
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 2px,
+    rgba(229, 62, 62, 0.15) 2px,
+    rgba(229, 62, 62, 0.15) 4px
+  );
+}
+
+/* 자산 구성 */
+.asset-stack-bar {
+  display: flex;
+  height: 22px;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  border: 1px solid var(--report-border);
+}
+
+.asset-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: white;
+  font-weight: 600;
+}
+
+.asset-segment.realestate {
+  background: var(--report-primary);
+}
+
+.asset-segment.financial {
+  background: var(--report-accent);
+}
+
+.asset-segment.pension {
+  background: #63b3ed;
+}
+
+.asset-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.asset-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--report-text);
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.legend-dot.realestate {
+  background: var(--report-primary);
+}
+
+.legend-dot.financial {
+  background: var(--report-accent);
+}
+
+.legend-dot.pension {
+  background: #63b3ed;
+}
+
+.asset-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--report-border);
+}
+
+.asset-summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--report-text);
+}
+
+.asset-summary-row.debt {
+  color: var(--report-danger);
+}
+
+.debt-detail {
+  font-size: 9px;
+  font-weight: 400;
+  color: var(--report-text-light);
+}
+
+.asset-summary-row.total {
+  font-weight: 700;
+  color: var(--report-text);
+  padding-top: 4px;
+  margin-top: 2px;
+  border-top: 1px solid var(--report-border);
+}
+
+.asset-summary-row.highlight {
+  background: #ebf8ff;
+  padding: 6px 8px;
+  border-radius: 3px;
+  margin-top: 6px;
+  font-weight: 600;
+  color: var(--report-secondary);
+  border: 1px solid #bee3f8;
+}
+
+/* 자산 지속성 */
+.sustainability-timeline {
+  margin-bottom: 10px;
+}
+
+.timeline-bar {
+  position: relative;
+  height: 20px;
+  background: #fed7d7;
+  border-radius: 3px;
+  overflow: visible;
+  border: 1px solid #feb2b2;
+}
+
+.timeline-filled {
+  height: 100%;
+  background: linear-gradient(90deg, var(--report-success), var(--report-warning));
+  border-radius: 2px 0 0 2px;
+}
+
+.timeline-marker {
+  position: absolute;
+  top: -2px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.marker-label {
+  background: var(--report-primary);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.timeline-marker::after {
+  content: '';
+  width: 2px;
+  height: 10px;
+  background: var(--report-primary);
+}
+
+.timeline-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 10px;
+  color: var(--report-text-light);
+}
+
+.sustainability-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.stat-label {
+  color: var(--report-text-light);
+}
+
+.stat-value {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--report-text);
+}
+
+.stat-row.negative .stat-value {
+  color: var(--report-danger);
+}
+
+.sustainability-note {
+  font-size: 9px;
+  color: var(--report-text-light);
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid var(--report-border);
+}
+
+.stat-row.positive .stat-value {
+  color: var(--report-success);
+}
+
+/* 리스크 진단 */
+.risk-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.risk-item {
+  display: grid;
+  grid-template-columns: 85px 1fr 65px;
+  align-items: center;
+  gap: 10px;
+}
+
+.risk-label {
+  font-size: 11px;
+  color: var(--report-text);
+  font-weight: 500;
+}
+
+.risk-bar-container {
+  position: relative;
+  height: 26px;
+  display: flex;
+  flex-direction: column;
+}
+
+.risk-zone-labels {
+  display: flex;
+  height: 10px;
+  margin-bottom: 2px;
+}
+
+.zone-label {
+  font-size: 8px;
+  font-weight: 500;
+  text-align: center;
+  color: var(--report-muted);
+}
+
+.zone-label.high {
+  width: 30%;
+  color: #c53030;
+}
+
+.zone-label.medium {
+  width: 30%;
+  color: #b7791f;
+}
+
+.zone-label.low {
+  width: 40%;
+  color: #276749;
+}
+
+.risk-bar-bg {
+  display: flex;
+  flex: 1;
+  border-radius: 2px;
+  overflow: hidden;
+  border: 1px solid var(--report-border);
+}
+
+.risk-zone {
+  height: 100%;
+}
+
+.risk-zone.low {
+  background: #c6f6d5;
+}
+
+.risk-zone.medium {
+  background: #fefcbf;
+}
+
+.risk-zone.high {
+  background: #fed7d7;
+}
+
+.risk-bar-bg.reverse .risk-zone.low {
+  order: 3;
+}
+
+.risk-bar-bg.reverse .risk-zone.medium {
+  order: 2;
+}
+
+.risk-bar-bg.reverse .risk-zone.high {
+  order: 1;
+}
+
+.risk-indicator {
+  position: absolute;
+  bottom: 2px;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+.risk-indicator.low {
+  background: var(--report-success);
+}
+
+.risk-indicator.medium {
+  background: var(--report-warning);
+}
+
+.risk-indicator.high {
+  background: var(--report-danger);
+}
+
+.risk-value {
+  font-size: 11px;
+  font-weight: 600;
+  text-align: right;
+  color: var(--report-text);
+}
+
+/* 개선 가능성 차트 */
+.improvement-chart {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  grid-template-rows: 1fr 18px;
+  gap: 4px;
+  height: 100px;
+}
+
+.chart-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: 10px;
+  color: var(--report-text-light);
+  padding-right: 4px;
+}
+
+.chart-area {
+  position: relative;
+  background: white;
+  border: 1px solid var(--report-border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.chart-area svg {
+  width: 100%;
+  height: 100%;
+}
+
+.chart-legend {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  border: 1px solid var(--report-border);
+}
+
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-line {
+  width: 14px;
+  height: 2px;
+}
+
+.legend-line.dashed {
+  background: repeating-linear-gradient(90deg, var(--report-accent), var(--report-accent) 3px, transparent 3px, transparent 5px);
+}
+
+.legend-line.solid {
+  background: var(--report-danger);
+}
+
+.chart-legend-item.improved {
+  color: var(--report-accent);
+}
+
+.chart-legend-item.current {
+  color: var(--report-danger);
+}
+
+.chart-x-axis {
+  grid-column: 2;
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--report-text-light);
+  padding: 0 4px;
+}
+
+/* 간단 소견 */
+.opinion-content {
+  margin-bottom: 10px;
+}
+
+.opinion-finding {
+  font-size: 12px;
+  color: var(--report-text);
+  line-height: 1.6;
+  margin: 0 0 8px 0;
+}
+
+.opinion-recommendation {
+  font-size: 12px;
+  color: var(--report-secondary);
+  line-height: 1.5;
+  margin: 0;
+  font-style: italic;
+}
+
+.next-step {
+  font-size: 12px;
+  color: var(--report-secondary);
+  padding-top: 10px;
+  border-top: 1px solid var(--report-border);
+}
+
+.next-step strong {
+  color: var(--report-primary);
+}
+
+/* 푸터 */
+.report-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 2px solid var(--report-primary);
+  margin-top: auto;
+}
+
+.footer-brand {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--report-primary);
+  letter-spacing: 0.5px;
+}
+
+.footer-tagline {
+  font-size: 10px;
+  color: var(--report-text-light);
+}
+
+/* 2페이지, 3페이지 스타일 */
+.report-page.page-2,
+.report-page.page-3 {
+  margin-top: 20px;
+}
+
+.report-page.page-3 .opinion-section {
+  flex: 1;
+}
+
+.report-page.page-3 .opinion-section .opinion-content {
+  min-height: 100px;
+}
+
+/* 기본 상식 섹션 스타일 */
+.knowledge-section {
+  padding: 10px 14px;
+}
+
+.knowledge-section .section-title {
+  font-size: 12px;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+}
+
+.knowledge-content {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--report-text);
+}
+
+.knowledge-content p {
+  margin: 0 0 6px 0;
+}
+
+.knowledge-tip {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: #ebf8ff;
+  border-radius: 4px;
+  font-size: 10px;
+  color: var(--report-secondary);
+}
+
+/* 연금 3층 구조 */
+.pension-layers {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pension-layer {
+  display: flex;
+  align-items: stretch;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.layer-number {
+  width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+}
+
+.layer-content {
+  flex: 1;
+  padding: 8px 10px;
+  background: var(--report-bg);
+}
+
+.layer-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--report-text);
+  margin-bottom: 2px;
+}
+
+.layer-desc {
+  font-size: 10px;
+  color: var(--report-text-light);
+  line-height: 1.4;
+}
+
+.pension-layer.layer-1 .layer-number {
+  background: var(--report-primary);
+}
+
+.pension-layer.layer-2 .layer-number {
+  background: var(--report-secondary);
+}
+
+.pension-layer.layer-3 .layer-number {
+  background: var(--report-accent);
+}
+
+/* 복리 예시 */
+.compound-example {
+  display: flex;
+  gap: 12px;
+  margin: 8px 0;
+}
+
+.compound-item {
+  flex: 1;
+  text-align: center;
+  padding: 8px;
+  background: var(--report-bg);
+  border-radius: 4px;
+}
+
+.compound-year {
+  display: block;
+  font-size: 9px;
+  color: var(--report-text-light);
+  margin-bottom: 2px;
+}
+
+.compound-amount {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--report-accent);
+}
+
+.compound-lesson {
+  font-size: 10px;
+  color: var(--report-text);
+  margin-top: 6px;
+}
+
+/* 핵심 숫자 */
+.key-numbers {
+  display: flex;
+  gap: 10px;
+}
+
+.key-number-item {
+  flex: 1;
+  text-align: center;
+  padding: 10px 8px;
+  background: var(--report-bg);
+  border-radius: 4px;
+}
+
+.key-number {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--report-primary);
+  margin-bottom: 4px;
+}
+
+.key-number-desc {
+  font-size: 9px;
+  color: var(--report-text-light);
+  line-height: 1.4;
+}
+
+/* CTA 섹션 스타일 */
+.cta-section {
+  background: var(--report-bg);
+  flex: 1;
+}
+
+.cta-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.cta-description {
+  font-size: 12px;
+  color: var(--report-text);
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+}
+
+.cta-benefits {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.cta-benefit-item {
+  flex: 1;
+  padding: 12px;
+  background: white;
+  border: 1px solid var(--report-border);
+  border-radius: 6px;
+  text-align: center;
+}
+
+.benefit-title {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--report-primary);
+  margin-bottom: 4px;
+}
+
+.benefit-desc {
+  display: block;
+  font-size: 10px;
+  color: var(--report-text-light);
+  line-height: 1.4;
+}
+
+.cta-button {
+  padding: 14px 32px;
+  background: var(--report-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cta-button:hover {
+  background: var(--report-secondary);
+}
+
+/* 인쇄용 스타일 */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  html, body, #root {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    width: 210mm;
+  }
+
+  .report-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    min-height: 0 !important;
+  }
+
+  .report-page {
+    width: 210mm;
+    height: 297mm;
+    min-height: 297mm;
+    margin: 0;
+    padding: 10mm 12mm;
+    box-shadow: none;
+    box-sizing: border-box;
+    background: white !important;
+    page-break-after: always;
+  }
+
+  .report-page.page-2,
+  .report-page.page-3 {
+    margin-top: 0;
+    page-break-before: always;
+  }
+
+  .print-button,
+  .cta-button {
+    display: none !important;
+  }
+
+  .report-section {
+    break-inside: avoid;
+  }
+
+  .report-footer {
+    margin-top: auto;
+  }
+
+  /* 배경색 인쇄 */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

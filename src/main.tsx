@@ -19,16 +19,16 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />} />
-        <Route path="/simple" element={<SimpleApp />} />
-        <Route path="/scenario" element={<ProfessionalScenario />} />
-        <Route path="/professional" element={<ProfessionalApp />} />
-        <Route path="/professional/diagnosis" element={<ProfessionalDiagnosis />} />
-        <Route path="/professional/scenario" element={<ProfessionalScenario />} />
-        <Route path="/professional/report" element={<DiagnosisReport />} />
-        <Route path="/professional/report-v2" element={<DiagnosisReportV2 />} />
-        <Route path="/lifecycle-demo" element={<LifecycleDemo />} />
-        <Route path="/scenario-planning" element={<ScenarioPlanning />} />
-        <Route path="/demo" element={<DemoData />} />
+        <Route path="/x9f2k1" element={<SimpleApp />} />
+        <Route path="/m3p7q8" element={<ProfessionalScenario />} />
+        <Route path="/v5n8w2" element={<ProfessionalApp />} />
+        <Route path="/v5n8w2/d4h6j9" element={<ProfessionalDiagnosis />} />
+        <Route path="/v5n8w2/m3p7q8" element={<ProfessionalScenario />} />
+        <Route path="/v5n8w2/r7t3y1" element={<DiagnosisReport />} />
+        <Route path="/v5n8w2/r7t3y1-v2" element={<DiagnosisReportV2 />} />
+        <Route path="/k2c9f4" element={<LifecycleDemo />} />
+        <Route path="/b8s5l7" element={<ScenarioPlanning />} />
+        <Route path="/z6a1e3" element={<DemoData />} />
         <Route path="/calculator" element={<Calculator />} />
       </Routes>
     </BrowserRouter>
