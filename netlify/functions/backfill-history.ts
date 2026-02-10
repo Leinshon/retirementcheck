@@ -135,31 +135,110 @@ function findVIXValue(quotes: YahooQuote[], targetDate: Date): number | null {
   return closestQuote ? Math.round(closestQuote.close * 100) / 100 : null
 }
 
-// Fear & Greed Index 데이터 구조 (Alternative.me - 암호화폐 기반)
+// CNN Fear & Greed Index 데이터 구조
 interface FearGreedData {
-  value: string
-  timestamp: string
+  date: Date
+  value: number
 }
 
-// Alternative.me Fear & Greed API (암호화폐 기반이지만 시장 심리 대용)
-// 최대 400일치만 제공 - 있는 만큼만 사용
-interface FearGreedResponse {
-  data: FearGreedData[]
+// CNN Fear & Greed API 응답 구조
+interface CNNFearGreedHistoricalItem {
+  x: number  // timestamp in milliseconds
+  y: number  // score
+  rating: string
 }
 
-async function fetchFearGreedHistory(): Promise<FearGreedData[]> {
+interface CNNFearGreedResponse {
+  fear_and_greed: {
+    score: number
+    rating: string
+    timestamp: string
+  }
+  fear_and_greed_historical: {
+    data: CNNFearGreedHistoricalItem[]
+  }
+}
+
+// GitHub CSV에서 2011-2023 과거 데이터 가져오기
+async function fetchFearGreedFromGitHub(): Promise<FearGreedData[]> {
   try {
-    const response = await fetch('https://api.alternative.me/fng/?limit=0&format=json') // limit=0 = 전체
+    const response = await fetch('https://raw.githubusercontent.com/whit3rabbit/fear-greed-data/main/fear-greed-2011-2023.csv')
     if (!response.ok) {
-      console.warn(`Alternative.me API warning: ${response.status}`)
+      console.warn(`GitHub CSV warning: ${response.status}`)
       return []
     }
-    const data: FearGreedResponse = await response.json()
-    return data.data || []
+    const csvText = await response.text()
+    const lines = csvText.trim().split('\n')
+    const data: FearGreedData[] = []
+
+    // 첫 줄은 헤더 (Date,Fear Greed)
+    for (let i = 1; i < lines.length; i++) {
+      const [dateStr, valueStr] = lines[i].split(',')
+      if (dateStr && valueStr) {
+        // 날짜 형식: M/D/YYYY -> Date 객체로 변환
+        const parts = dateStr.split('/')
+        const month = parseInt(parts[0]) - 1
+        const day = parseInt(parts[1])
+        const year = parseInt(parts[2])
+        const date = new Date(year, month, day)
+        const value = parseInt(valueStr)
+        if (!isNaN(value)) {
+          data.push({ date, value })
+        }
+      }
+    }
+    console.log(`GitHub CSV: loaded ${data.length} records (2011-2023)`)
+    return data
   } catch (error) {
-    console.warn('Alternative.me API error:', error)
+    console.warn('GitHub CSV error:', error)
     return []
   }
+}
+
+// CNN Fear & Greed API에서 최근 1년 데이터 가져오기 (2024~현재)
+async function fetchFearGreedFromCNN(): Promise<FearGreedData[]> {
+  try {
+    const response = await fetch('https://production.dataviz.cnn.io/index/fearandgreed/graphdata', {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json',
+        'Referer': 'https://edition.cnn.com/markets/fear-and-greed',
+      },
+    })
+    if (!response.ok) {
+      console.warn(`CNN Fear & Greed API warning: ${response.status}`)
+      return []
+    }
+    const json: CNNFearGreedResponse = await response.json()
+    const historicalData = json.fear_and_greed_historical?.data || []
+
+    const data: FearGreedData[] = historicalData.map(item => ({
+      date: new Date(item.x),
+      value: Math.round(item.y),
+    }))
+    console.log(`CNN API: loaded ${data.length} records (recent 1 year)`)
+    return data
+  } catch (error) {
+    console.warn('CNN Fear & Greed API error:', error)
+    return []
+  }
+}
+
+// GitHub CSV + CNN API 데이터 결합
+async function fetchFearGreedHistory(): Promise<FearGreedData[]> {
+  const [githubData, cnnData] = await Promise.all([
+    fetchFearGreedFromGitHub(),
+    fetchFearGreedFromCNN(),
+  ])
+
+  // GitHub 데이터 (2011-2023) + CNN 데이터 (2024~현재)
+  // 중복 방지: CNN 데이터 중 2024년 이후만 사용
+  const cutoffDate = new Date('2024-01-01')
+  const recentCnnData = cnnData.filter(d => d.date >= cutoffDate)
+
+  const combined = [...githubData, ...recentCnnData]
+  console.log(`Combined Fear & Greed data: ${combined.length} records (2011~present)`)
+  return combined
 }
 
 // Fear & Greed 값 찾기
@@ -168,10 +247,10 @@ function findFearGreedValue(data: FearGreedData[], targetDate: Date): number | n
   const dayMs = 24 * 60 * 60 * 1000
 
   for (const item of data) {
-    const itemTime = parseInt(item.timestamp) * 1000
+    const itemTime = item.date.getTime()
     const diff = Math.abs(itemTime - targetTime)
     if (diff < 2 * dayMs) { // 2일 이내
-      return parseInt(item.value)
+      return item.value
     }
   }
   return null
@@ -623,7 +702,7 @@ const handler: Handler = async () => {
           start: records[0]?.date,
           end: records[records.length - 1]?.date,
         },
-        note: 'Fear & Greed는 Alternative.me(암호화폐 기반) 데이터 사용',
+        note: 'Fear & Greed는 GitHub CSV(2011-2023) + CNN API(2024~현재) 데이터 사용',
       }),
     }
   } catch (error) {
