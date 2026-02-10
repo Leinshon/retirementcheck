@@ -8,6 +8,10 @@
 [functions]
   directory = "netlify/functions"
 
+# 매일 오전 9시(UTC) = 한국시간 오후 6시에 시장 데이터 수집
+[functions."collect-market-data"]
+  schedule = "0 9 * * *"
+
 [dev]
   command = "npm run dev"
   targetPort = 5173
