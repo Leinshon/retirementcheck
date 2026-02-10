@@ -97,64 +97,78 @@ function calculateYoYChange(current: number, yearAgo: number): number {
   return ((current - yearAgo) / yearAgo) * 100
 }
 
-// 점수 정규화 함수
-function normalizeScore(value: number, min: number, max: number, invert = false): number {
-  const clamped = Math.max(min, Math.min(max, value))
-  const normalized = ((clamped - min) / (max - min)) * 100
-  return invert ? 100 - normalized : normalized
+// Z-score 기반 5개 핵심 지표 통계 (10년 상관분석 기반)
+// Calculator.tsx와 동일한 방식
+const INDICATOR_STATS = {
+  'HY Spread': { mean: 4.5, std: 1.8, weight: 28.1, invert: true },
+  'VIX': { mean: 18.5, std: 7.5, weight: 25.7, invert: true },
+  'Initial Claims': { mean: 300000, std: 80000, weight: 23.5, invert: true },
+  'S&P vs 200MA': { mean: 5, std: 8, weight: 16.3, invert: true },
+  'Yield Curve 10Y-2Y': { mean: 0.5, std: 0.8, weight: 6.3, invert: false },
 }
 
-// 종합 점수 계산 (카테고리별 동일 가중치)
+// Z-score 기반 종합 점수 계산 (Calculator와 동일)
 function calculateCompositeScore(data: {
-  fearGreed: number | null
   vix: number | null
   spyVs200MA: number | null
-  buffettIndicator: number | null
-  fedBalanceSheetYoY: number | null
-  m2GrowthYoY: number | null
   hySpread: number | null
   yieldCurve10Y2Y: number | null
-  yieldCurve10Y3M: number | null
   initialClaims: number | null
 }): number {
-  const categories: { [key: string]: number[] } = {
-    sentiment: [],
-    valuation: [],
-    liquidity: [],
-    credit: [],
-    macro: [],
+  let weightedZScore = 0
+  let totalWeight = 0
+
+  // HY Spread
+  if (data.hySpread !== null) {
+    const stat = INDICATOR_STATS['HY Spread']
+    const value = stat.invert ? -data.hySpread : data.hySpread
+    const zscore = (value - (stat.invert ? -stat.mean : stat.mean)) / stat.std
+    weightedZScore += zscore * stat.weight
+    totalWeight += stat.weight
   }
 
-  // Sentiment
-  if (data.fearGreed !== null) categories.sentiment.push(100 - data.fearGreed)
-  if (data.vix !== null) categories.sentiment.push(normalizeScore(data.vix, 12, 40, true))
-  if (data.spyVs200MA !== null) categories.sentiment.push(normalizeScore(data.spyVs200MA, -10, 10, true))
-
-  // Valuation
-  if (data.buffettIndicator !== null) categories.valuation.push(normalizeScore(data.buffettIndicator, 80, 250, true))
-
-  // Liquidity
-  if (data.fedBalanceSheetYoY !== null) categories.liquidity.push(normalizeScore(data.fedBalanceSheetYoY, -5, 15))
-  if (data.m2GrowthYoY !== null) categories.liquidity.push(normalizeScore(data.m2GrowthYoY, -5, 10))
-
-  // Credit
-  if (data.hySpread !== null) categories.credit.push(normalizeScore(data.hySpread, 2.5, 8, true))
-
-  // Macro
-  if (data.yieldCurve10Y2Y !== null) categories.macro.push(normalizeScore(data.yieldCurve10Y2Y, -1, 2))
-  if (data.yieldCurve10Y3M !== null) categories.macro.push(normalizeScore(data.yieldCurve10Y3M, -1, 2))
-  if (data.initialClaims !== null) categories.macro.push(normalizeScore(data.initialClaims, 200000, 400000, true))
-
-  // 카테고리별 평균 계산
-  const categoryAverages: number[] = []
-  for (const scores of Object.values(categories)) {
-    if (scores.length > 0) {
-      categoryAverages.push(scores.reduce((a, b) => a + b, 0) / scores.length)
-    }
+  // VIX
+  if (data.vix !== null) {
+    const stat = INDICATOR_STATS['VIX']
+    const value = stat.invert ? -data.vix : data.vix
+    const zscore = (value - (stat.invert ? -stat.mean : stat.mean)) / stat.std
+    weightedZScore += zscore * stat.weight
+    totalWeight += stat.weight
   }
 
-  if (categoryAverages.length === 0) return 0
-  return Math.round((categoryAverages.reduce((a, b) => a + b, 0) / categoryAverages.length) * 100) / 100
+  // Initial Claims
+  if (data.initialClaims !== null) {
+    const stat = INDICATOR_STATS['Initial Claims']
+    const value = stat.invert ? -data.initialClaims : data.initialClaims
+    const zscore = (value - (stat.invert ? -stat.mean : stat.mean)) / stat.std
+    weightedZScore += zscore * stat.weight
+    totalWeight += stat.weight
+  }
+
+  // S&P vs 200MA
+  if (data.spyVs200MA !== null) {
+    const stat = INDICATOR_STATS['S&P vs 200MA']
+    const value = stat.invert ? -data.spyVs200MA : data.spyVs200MA
+    const zscore = (value - (stat.invert ? -stat.mean : stat.mean)) / stat.std
+    weightedZScore += zscore * stat.weight
+    totalWeight += stat.weight
+  }
+
+  // Yield Curve 10Y-2Y
+  if (data.yieldCurve10Y2Y !== null) {
+    const stat = INDICATOR_STATS['Yield Curve 10Y-2Y']
+    const value = stat.invert ? -data.yieldCurve10Y2Y : data.yieldCurve10Y2Y
+    const zscore = (value - (stat.invert ? -stat.mean : stat.mean)) / stat.std
+    weightedZScore += zscore * stat.weight
+    totalWeight += stat.weight
+  }
+
+  if (totalWeight === 0) return 50
+
+  // 가중 평균 Z-score를 0-100 스케일로 변환
+  const avgZScore = weightedZScore / totalWeight
+  const score = avgZScore * 10 + 50
+  return Math.round(Math.max(0, Math.min(100, score)) * 100) / 100
 }
 
 const handler: Handler = async (event: HandlerEvent) => {
@@ -262,17 +276,12 @@ const handler: Handler = async (event: HandlerEvent) => {
       initialClaims = parseInt(icsaData[0].value)
     }
 
-    // Calculate composite score
+    // Calculate composite score (Z-score 기반 5개 핵심 지표)
     const compositeScore = calculateCompositeScore({
-      fearGreed: fearGreedValue,
       vix,
       spyVs200MA,
-      buffettIndicator,
-      fedBalanceSheetYoY,
-      m2GrowthYoY,
       hySpread,
       yieldCurve10Y2Y,
-      yieldCurve10Y3M,
       initialClaims,
     })
 
