@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -314,12 +315,12 @@ const calculateIndicatorScores = (
   if (data.fedBalanceSheet) {
     addIndicator(
       'Fed Balance Sheet',
-      `${data.fedBalanceSheet.yoyChange > 0 ? '+' : ''}${data.fedBalanceSheet.yoyChange.toFixed(1)}%`,
+      `${data.fedBalanceSheet.yoyChange > 0 ? '+' : ''}${data.fedBalanceSheet.yoyChange.toFixed(1)}% YoY`,
       data.fedBalanceSheet.yoyChange,
       normalizeScore(data.fedBalanceSheet.yoyChange, -5, 15, true),
       'liquidity',
       '-5% ~ +15%',
-      '축소 중일수록 매력 상승 (향후 완화 기대)',
+      '긴축(QT) 중일수록 매력 상승. 완화 전환 시 상승 여력',
       -5, 15,
       'fed_balance_sheet_yoy',
       true
@@ -330,12 +331,12 @@ const calculateIndicatorScores = (
   if (data.m2Growth) {
     addIndicator(
       'M2 Growth',
-      `${data.m2Growth.yoyChange > 0 ? '+' : ''}${data.m2Growth.yoyChange.toFixed(1)}%`,
+      `${data.m2Growth.yoyChange > 0 ? '+' : ''}${data.m2Growth.yoyChange.toFixed(1)}% YoY`,
       data.m2Growth.yoyChange,
       normalizeScore(data.m2Growth.yoyChange, -5, 10, true),
       'liquidity',
       '-5% ~ +10%',
-      '통화량 감소 중일수록 매력 상승 (향후 확대 기대)',
+      '통화량 감소 중일수록 매력 상승. 확대 전환 시 상승 여력',
       -5, 10,
       'm2_growth_yoy',
       true
@@ -678,6 +679,84 @@ const indicatorKoreanName: Record<string, string> = {
   'Yield Curve 10Y-2Y': '장단기금리차 10Y-2Y',
   'Yield Curve 10Y-3M': '장단기금리차 10Y-3M',
   'Initial Claims': '신규실업수당청구',
+}
+
+// 극단적 지표 해설 생성
+const generateExtremeIndicatorCommentary = (
+  coreIndicators: IndicatorScore[],
+  marketHistory: MarketHistoryRecord[],
+  indicatorWeights: Record<string, number>
+): string[] => {
+  const commentaries: string[] = []
+
+  // 가중치 순으로 정렬
+  const sortedIndicators = [...coreIndicators].sort(
+    (a, b) => (indicatorWeights[b.name] || 0) - (indicatorWeights[a.name] || 0)
+  )
+
+  for (const indicator of sortedIndicators) {
+    const historyField = indicatorToHistoryField[indicator.name]
+    if (!historyField) continue
+
+    // 해당 지표의 히스토리 값들
+    const historyValues = marketHistory
+      .map(h => h[historyField] as number | null)
+      .filter((v): v is number => v !== null)
+      .sort((a, b) => a - b)
+
+    if (historyValues.length < 10) continue
+
+    const currentValue = indicator.rawValue
+    const koreanName = indicatorKoreanName[indicator.name]
+
+    // 백분위 계산 (현재 값이 히스토리에서 몇 번째인지)
+    const rank = historyValues.filter(v => v <= currentValue).length
+    const percentile = Math.round((rank / historyValues.length) * 100)
+
+    // 상위/하위 20% 이하일 때만 해설 생성
+    if (percentile <= 20 || percentile >= 80) {
+      const isExtremeLow = percentile <= 20
+      const extremeLabel = isExtremeLow ? `하위 ${percentile}%` : `상위 ${100 - percentile}%`
+
+      // 지표별 맞춤 해설
+      if (indicator.name === 'VIX') {
+        if (isExtremeLow) {
+          commentaries.push(`${koreanName}가 ${indicator.value}로 ${extremeLabel} 수준입니다. 시장 안도감이 높아 조정 가능성에 유의하세요.`)
+        } else {
+          commentaries.push(`${koreanName}가 ${indicator.value}로 ${extremeLabel} 수준의 공포 구간입니다. 역사적으로 높은 VIX는 매수 기회였습니다.`)
+        }
+      } else if (indicator.name === 'HY Spread') {
+        if (isExtremeLow) {
+          commentaries.push(`${koreanName}가 ${indicator.value}로 ${extremeLabel} 수준입니다. 신용 리스크 경계심이 낮아 주의가 필요합니다.`)
+        } else {
+          commentaries.push(`${koreanName}가 ${indicator.value}로 ${extremeLabel} 수준입니다. 신용 스트레스가 높지만 역발상 매수 기회일 수 있습니다.`)
+        }
+      } else if (indicator.name === 'Initial Claims') {
+        if (isExtremeLow) {
+          commentaries.push(`${koreanName}가 ${indicator.value}로 ${extremeLabel} 수준입니다. 고용시장이 과열 상태로 긴축 지속 가능성이 있습니다.`)
+        } else {
+          commentaries.push(`${koreanName}가 ${indicator.value}로 ${extremeLabel} 수준입니다. 고용 악화는 연준 완화 전환 신호일 수 있습니다.`)
+        }
+      } else if (indicator.name === 'S&P vs 200MA') {
+        if (isExtremeLow) {
+          commentaries.push(`S&P500이 200일선 대비 ${indicator.value}로 ${extremeLabel} 수준입니다. 기술적으로 저점 매수 구간입니다.`)
+        } else {
+          commentaries.push(`S&P500이 200일선 대비 ${indicator.value}로 ${extremeLabel} 수준입니다. 과열 구간으로 추격 매수는 주의하세요.`)
+        }
+      } else if (indicator.name === 'Yield Curve 10Y-2Y') {
+        if (isExtremeLow) {
+          commentaries.push(`${koreanName}가 ${indicator.value}로 ${extremeLabel} 수준의 역전 상태입니다. 경기 침체 우려가 있지만 주가는 선반영하는 경향이 있습니다.`)
+        } else {
+          commentaries.push(`${koreanName}가 ${indicator.value}로 정상화되어 ${extremeLabel} 수준입니다. 경기 회복 기대가 반영되고 있습니다.`)
+        }
+      }
+    }
+
+    // 최대 2개 해설만
+    if (commentaries.length >= 2) break
+  }
+
+  return commentaries
 }
 
 // 소득세율표 (2024년)
@@ -1170,6 +1249,13 @@ const Calculator = () => {
   const [chartPeriod, setChartPeriod] = useState<'1y' | '3y' | '5y' | '10y'>('1y')
   const [highlightStance, setHighlightStance] = useState<InvestmentStance | null>(null)
   const [selectedDateIndex, setSelectedDateIndex] = useState<number | null>(null) // null = 최신
+
+  // Gemini 채팅 상태
+  const [marketChatOpen, setMarketChatOpen] = useState(false)
+  const [marketChatMessages, setMarketChatMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([])
+  const [marketChatInput, setMarketChatInput] = useState('')
+  const [marketChatLoading, setMarketChatLoading] = useState(false)
+  const marketChatRef = useRef<HTMLDivElement>(null)
 
   // 백테스팅 상태
   const [backtestStrategy, setBacktestStrategy] = useState<BacktestStrategy>('dynamic_allocation')
@@ -2591,6 +2677,17 @@ const Calculator = () => {
                         <span className="market-insight-title">현재 시장 상황</span>
                       </div>
                       <p className="market-insight-content">{stanceInfo.description}</p>
+                      {(() => {
+                        const extremeComments = generateExtremeIndicatorCommentary(coreIndicators, marketHistory, indicatorWeightsDisplay)
+                        if (extremeComments.length === 0) return null
+                        return (
+                          <div className="market-extreme-commentary">
+                            {extremeComments.map((comment, idx) => (
+                              <p key={idx} className="market-extreme-comment">{comment}</p>
+                            ))}
+                          </div>
+                        )
+                      })()}
                     </div>
 
                     <div className="market-recommendation-row">
@@ -3005,8 +3102,9 @@ const Calculator = () => {
                                 const minVal = Math.min(...values)
                                 const maxVal = Math.max(...values)
                                 const padding = (maxVal - minVal) * 0.1 || 1
-                                const yMin = minVal - padding
-                                const yMax = maxVal + padding
+                                // Fear & Greed만 0-100 고정 범위 적용
+                                const yMin = item.name === 'Fear & Greed' ? Math.max(0, minVal - padding) : minVal - padding
+                                const yMax = item.name === 'Fear & Greed' ? Math.min(100, maxVal + padding) : maxVal + padding
 
                                 return (
                                   <div className="market-indicator-chart">
@@ -3080,11 +3178,13 @@ const Calculator = () => {
                     </div>
                     <div className="market-category-items">
                       {refIndicators.map((item) => {
-                        const scoreColor = '#94a3b8' // 회색 처리
+                        const grayColor = '#94a3b8' // 접힌 상태 회색
+                        const activeColor = item.score >= 60 ? '#22c55e' : item.score >= 40 ? '#f59e0b' : '#ef4444' // 펼친 상태 점수별 색상
                         const rangePosition = ((item.rawValue - item.min) / (item.max - item.min)) * 100
                         const clampedPosition = Math.max(0, Math.min(100, rangePosition))
                         const isExpanded = expandedIndicator === item.name
                         const historyField = indicatorToHistoryField[item.name]
+                        const displayColor = isExpanded ? activeColor : grayColor
 
                         const indicatorHistory = historyField ? marketHistory
                           .filter(h => h[historyField] !== null)
@@ -3104,7 +3204,7 @@ const Calculator = () => {
                                 <span className="market-indicator-toggle">{isExpanded ? '-' : '+'}</span>
                                 {item.name} ({indicatorKoreanName[item.name]})
                               </span>
-                              <span className="market-indicator-score" style={{ color: scoreColor }}>{Math.round(item.score)}점</span>
+                              <span className="market-indicator-score" style={{ color: displayColor }}>{Math.round(item.score)}점</span>
                             </div>
                             <div className="market-indicator-progress">
                               <div className="market-indicator-bar">
@@ -3112,7 +3212,7 @@ const Calculator = () => {
                                   className="market-indicator-fill"
                                   style={{
                                     width: `${clampedPosition}%`,
-                                    backgroundColor: scoreColor,
+                                    backgroundColor: displayColor,
                                   }}
                                 />
                                 <span
@@ -3133,8 +3233,9 @@ const Calculator = () => {
                               const minVal = Math.min(...values)
                               const maxVal = Math.max(...values)
                               const padding = (maxVal - minVal) * 0.1 || 1
-                              const yMin = minVal - padding
-                              const yMax = maxVal + padding
+                              // Fear & Greed만 0-100 고정 범위 적용
+                              const yMin = item.name === 'Fear & Greed' ? Math.max(0, minVal - padding) : minVal - padding
+                              const yMax = item.name === 'Fear & Greed' ? Math.min(100, maxVal + padding) : maxVal + padding
 
                               return (
                                 <div className="market-indicator-chart">
@@ -3147,8 +3248,8 @@ const Calculator = () => {
                                       datasets: [{
                                         label: item.name,
                                         data: values,
-                                        borderColor: scoreColor,
-                                        backgroundColor: `${scoreColor}20`,
+                                        borderColor: activeColor,
+                                        backgroundColor: `${activeColor}20`,
                                         fill: true,
                                         tension: 0.3,
                                         pointRadius: 0,
@@ -3567,6 +3668,98 @@ const Calculator = () => {
             </div>
           )}
         </div>
+      )}
+
+      {/* Gemini 채팅 패널 - 시장 환경 탭일 때만 표시 */}
+      {activeTab === 'market' && selectedMarketData && createPortal(
+        <div
+          className={`market-chat-panel ${marketChatOpen ? 'open' : ''}`}
+          onClick={() => !marketChatOpen && setMarketChatOpen(true)}
+        >
+          {!marketChatOpen && <span className="market-chat-toggle">AI</span>}
+          <div className="market-chat-header">
+            <span className="market-chat-title">Gemini</span>
+            <span className="market-chat-toggle" onClick={() => setMarketChatOpen(false)}>x</span>
+          </div>
+          <div className="market-chat-messages" ref={marketChatRef}>
+            {marketChatMessages.length === 0 && (
+              <div className="market-chat-empty">
+                <p>현재 시장 지표를 기반으로 질문해보세요.</p>
+                <div className="market-chat-suggestions">
+                  <button onClick={() => setMarketChatInput('현재 시장 상황을 요약해줘')}>
+                    현재 시장 상황 요약
+                  </button>
+                  <button onClick={() => setMarketChatInput('지금 매수해도 될까?')}>
+                    매수 타이밍 조언
+                  </button>
+                  <button onClick={() => setMarketChatInput('가장 주목해야 할 지표는?')}>
+                    주목할 지표
+                  </button>
+                </div>
+              </div>
+            )}
+            {marketChatMessages.map((msg, idx) => (
+              <div key={idx} className={`market-chat-message ${msg.role}`}>
+                <div className="market-chat-message-content">{msg.content}</div>
+              </div>
+            ))}
+            {marketChatLoading && (
+              <div className="market-chat-message assistant">
+                <div className="market-chat-message-content loading">분석 중...</div>
+              </div>
+            )}
+          </div>
+          <form className="market-chat-input-form" onSubmit={async (e) => {
+            e.preventDefault()
+            if (!marketChatInput.trim() || marketChatLoading) return
+
+            const userMessage = marketChatInput.trim()
+            setMarketChatInput('')
+            setMarketChatMessages(prev => [...prev, { role: 'user', content: userMessage }])
+            setMarketChatLoading(true)
+
+            try {
+              const scores = calculateIndicatorScores(selectedMarketData, marketHistory)
+              const indicatorsText = scores.map(s =>
+                `${s.name}: ${s.value} (${Math.round(s.score)}점)`
+              ).join('\n')
+
+              const response = await fetch('/.netlify/functions/market-chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  question: userMessage,
+                  marketContext: {
+                    date: marketHistory[selectedDateIndex ?? marketHistory.length - 1]?.date,
+                    indicators: indicatorsText,
+                  },
+                }),
+              })
+
+              const data = await response.json()
+              setMarketChatMessages(prev => [...prev, { role: 'assistant', content: data.answer }])
+            } catch {
+              setMarketChatMessages(prev => [...prev, { role: 'assistant', content: '오류가 발생했습니다. 다시 시도해주세요.' }])
+            } finally {
+              setMarketChatLoading(false)
+              setTimeout(() => {
+                marketChatRef.current?.scrollTo({ top: marketChatRef.current.scrollHeight, behavior: 'smooth' })
+              }, 100)
+            }
+          }}>
+            <input
+              type="text"
+              value={marketChatInput}
+              onChange={(e) => setMarketChatInput(e.target.value)}
+              placeholder="시장에 대해 질문하세요..."
+              disabled={marketChatLoading}
+            />
+            <button type="submit" disabled={marketChatLoading || !marketChatInput.trim()}>
+              전송
+            </button>
+          </form>
+        </div>,
+        document.body
       )}
     </div>
   )
