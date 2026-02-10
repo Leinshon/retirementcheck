@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import './DiagnosisReport.css'
 import { householdFinance2025, type AgeGroup } from './data/householdFinance2025'
 
@@ -64,7 +64,7 @@ const defaultGlobalData: GlobalData = {
 }
 
 const DiagnosisReport = () => {
-  const [data, setData] = useState<GlobalData>(() => {
+  const [data] = useState<GlobalData>(() => {
     // localStorage에서 저장된 데이터 불러오기
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('professionalDiagnosisData')
