@@ -631,36 +631,6 @@ const generateExtremeIndicatorCommentary = (
   return commentaries
 }
 
-// Gemini API 호출 함수
-const callGeminiAPI = async (prompt: string): Promise<string> => {
-  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY
-  if (!GEMINI_API_KEY) {
-    throw new Error('Gemini API 키가 설정되지 않았습니다')
-  }
-
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1024,
-        },
-      }),
-    }
-  )
-
-  if (!response.ok) {
-    throw new Error(`API 오류: ${response.status}`)
-  }
-
-  const data = await response.json()
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || '응답을 생성할 수 없습니다.'
-}
-
 // 채팅 메시지 타입
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -938,66 +908,44 @@ export default function Market() {
       const stance = determineInvestmentStance(avgScore)
       const stanceInfo = getStanceInfo(stance)
 
+      // 투자 타이밍 지표
       const indicatorSummary = scores.map(s =>
-        `- ${s.name}: ${s.value} (점수: ${s.score.toFixed(0)})`
+        `${s.name}: ${s.value} (${Math.round(s.score)}점)`
       ).join('\n')
 
       // 매크로 지표 요약
       const latestRecord = marketHistory[marketHistory.length - 1]
       const macroSummary = latestRecord ? `
-성장 지표:
-- GDP 성장률(QoQ): ${latestRecord.gdp_growth_qoq !== null ? `${latestRecord.gdp_growth_qoq.toFixed(1)}%` : 'N/A'}
-- ISM 제조업: ${latestRecord.ism_manufacturing !== null ? latestRecord.ism_manufacturing.toFixed(1) : 'N/A'}
-- ISM 서비스업: ${latestRecord.ism_services !== null ? latestRecord.ism_services.toFixed(1) : 'N/A'}
-- 소매판매(YoY): ${latestRecord.retail_sales_yoy !== null ? `${latestRecord.retail_sales_yoy.toFixed(1)}%` : 'N/A'}
-
-물가 지표:
-- CPI(YoY): ${latestRecord.cpi_yoy !== null ? `${latestRecord.cpi_yoy.toFixed(1)}%` : 'N/A'}
-- Core CPI(YoY): ${latestRecord.core_cpi_yoy !== null ? `${latestRecord.core_cpi_yoy.toFixed(1)}%` : 'N/A'}
-- PCE(YoY): ${latestRecord.pce_yoy !== null ? `${latestRecord.pce_yoy.toFixed(1)}%` : 'N/A'}
-- Core PCE(YoY): ${latestRecord.core_pce_yoy !== null ? `${latestRecord.core_pce_yoy.toFixed(1)}%` : 'N/A'}
-
-고용 지표:
-- 실업률: ${latestRecord.unemployment_rate !== null ? `${latestRecord.unemployment_rate.toFixed(1)}%` : 'N/A'}
-- 노동참가율: ${latestRecord.labor_participation !== null ? `${latestRecord.labor_participation.toFixed(1)}%` : 'N/A'}
-- 비농업고용(MoM): ${latestRecord.nonfarm_payrolls_mom !== null ? `${(latestRecord.nonfarm_payrolls_mom / 1000).toFixed(0)}K` : 'N/A'}
-
-통화정책 지표:
-- 10년물 국채: ${latestRecord.treasury_10y !== null ? `${latestRecord.treasury_10y.toFixed(2)}%` : 'N/A'}
-- 2년물 국채: ${latestRecord.treasury_2y !== null ? `${latestRecord.treasury_2y.toFixed(2)}%` : 'N/A'}
-- 달러 인덱스: ${latestRecord.dollar_index !== null ? latestRecord.dollar_index.toFixed(1) : 'N/A'}` : ''
+성장: GDP ${latestRecord.gdp_growth_qoq?.toFixed(1) ?? 'N/A'}%, ISM제조 ${latestRecord.ism_manufacturing?.toFixed(1) ?? 'N/A'}, ISM서비스 ${latestRecord.ism_services?.toFixed(1) ?? 'N/A'}
+물가: CPI ${latestRecord.cpi_yoy?.toFixed(1) ?? 'N/A'}%, Core CPI ${latestRecord.core_cpi_yoy?.toFixed(1) ?? 'N/A'}%, PCE ${latestRecord.pce_yoy?.toFixed(1) ?? 'N/A'}%
+고용: 실업률 ${latestRecord.unemployment_rate?.toFixed(1) ?? 'N/A'}%, 노동참가 ${latestRecord.labor_participation?.toFixed(1) ?? 'N/A'}%
+금리: 10Y ${latestRecord.treasury_10y?.toFixed(2) ?? 'N/A'}%, 2Y ${latestRecord.treasury_2y?.toFixed(2) ?? 'N/A'}%, 달러 ${latestRecord.dollar_index?.toFixed(1) ?? 'N/A'}` : ''
 
       // 글로벌 지수 요약
       const globalSummary = globalIndices.length > 0 ? `
-글로벌 주요 지수:
-${globalIndices.map(idx => `- ${idx.name}: ${idx.price.toLocaleString()} (${idx.change >= 0 ? '+' : ''}${idx.changePercent.toFixed(2)}%)`).join('\n')}` : ''
+글로벌지수: ${globalIndices.slice(0, 6).map(idx => `${idx.name} ${idx.changePercent >= 0 ? '+' : ''}${idx.changePercent.toFixed(1)}%`).join(', ')}` : ''
 
-      const systemPrompt = `당신은 투자 시장 분석 전문가입니다. 현재 시장 상황에 대해 사용자의 질문에 답변해주세요.
-
-현재 시장 데이터 (${selectedMarketData.lastUpdated}):
-투자 매력도: ${avgScore}점 (${stanceInfo.label})
-${stanceInfo.description}
-
-투자 타이밍 지표:
+      // 전체 지표 텍스트
+      const indicatorsText = `투자매력도: ${avgScore}점 (${stanceInfo.label})
 ${indicatorSummary}
 ${macroSummary}
 ${globalSummary}
+권장배분: 주식 ${stanceInfo.allocation.stocks}, 채권 ${stanceInfo.allocation.bonds}, 현금 ${stanceInfo.allocation.cash}`
 
-권장 자산배분:
-- 주식: ${stanceInfo.allocation.stocks}
-- 채권: ${stanceInfo.allocation.bonds}
-- 현금: ${stanceInfo.allocation.cash}
+      const response = await fetch('/.netlify/functions/market-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: userMessage,
+          marketContext: {
+            date: selectedMarketData.lastUpdated,
+            indicators: indicatorsText,
+          },
+        }),
+      })
 
-사용자 질문: ${userMessage}
-
-답변 시 주의사항:
-- 한국어로 답변하세요
-- 구체적인 수치를 포함하세요
-- 짧고 명확하게 답변하세요 (3-4문장)
-- 투자 조언은 참고용임을 명시하세요`
-
-      const response = await callGeminiAPI(systemPrompt)
-      setMarketChatMessages(prev => [...prev, { role: 'assistant', content: response }])
+      const data = await response.json()
+      setMarketChatMessages(prev => [...prev, { role: 'assistant', content: data.answer }])
     } catch (error) {
       console.error('Chat error:', error)
       setMarketChatMessages(prev => [...prev, {

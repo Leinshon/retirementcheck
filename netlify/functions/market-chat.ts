@@ -1,4 +1,8 @@
 import type { Handler } from '@netlify/functions'
+import { config } from 'dotenv'
+
+// 로컬 개발 시 .env 파일 로드
+config()
 
 const handler: Handler = async (event) => {
   const headers = {
@@ -62,7 +66,7 @@ ${marketContext.indicators}
 ${question}`
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
