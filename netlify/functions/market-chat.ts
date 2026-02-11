@@ -1,8 +1,4 @@
 import type { Handler } from '@netlify/functions'
-import { config } from 'dotenv'
-
-// 로컬 개발 시 .env 파일 로드
-config()
 
 const handler: Handler = async (event) => {
   const headers = {
