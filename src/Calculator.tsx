@@ -12,13 +12,9 @@ import {
   Filler,
 } from 'chart.js'
 import { Line } from 'react-chartjs-2'
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from './lib/supabase'
+import { calculateCompositeScore } from './lib/composite-score'
 import './Calculator.css'
-
-// Supabase 클라이언트 (로컬 개발용 - 직접 연결)
-const SUPABASE_URL = 'https://xikizeymdabgwmwfifff.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpa2l6ZXltZGFiZ3dtd2ZpZmZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxNDk5MDUsImV4cCI6MjA4MjcyNTkwNX0.uCqIK7X5ahvQ2YisEBG1O5wVcgoYv5WGPGAl_eLryP4'
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 // Chart.js 등록
 ChartJS.register(
@@ -410,133 +406,26 @@ const calculateIndicatorScores = (
   return scores
 }
 
-// 핵심 지표별 역사적 통계 (1996-2025, 30년 데이터 기반)
-// Z-score 계산용: (현재값 - mean) / std
-// invert=true인 지표는 부호 반전 후 계산 (높을수록 미래 수익률 낮음)
-const INDICATOR_STATS: Record<string, { mean: number; std: number; invert: boolean; weight: number }> = {
-  'HY Spread': { mean: 5.1340, std: 2.5271, invert: false, weight: 0.2810 },
-  'VIX': { mean: 20.0970, std: 8.0555, invert: false, weight: 0.2569 },
-  'Initial Claims': { mean: 358862.6001, std: 318057.9358, invert: false, weight: 0.2351 },
-  'S&P vs 200MA': { mean: 3.4949, std: 7.9576, invert: true, weight: 0.1628 },
-  'Yield Curve 10Y-2Y': { mean: 0.9484, std: 0.9290, invert: false, weight: 0.0629 },
-}
-
-// Z-score 기반 Composite Score 계산 (통계적으로 정확한 방식)
-// 50점 = 역사적 평균, 60점 = 상위 16% (평균 + 1 std), 70점 = 상위 2% (평균 + 2 std)
+// MarketIndicators -> 공유 모듈용 입력으로 변환하여 Z-score 계산
 const calculateZScoreBasedScore = (data: MarketIndicators): number => {
-  let weightedZScore = 0
-  let totalWeight = 0
-
-  // HY Spread
-  if (data.highYieldSpread !== null) {
-    const stat = INDICATOR_STATS['HY Spread']
-    const value = stat.invert ? -data.highYieldSpread : data.highYieldSpread
-    const zscore = (value - stat.mean) / stat.std
-    weightedZScore += zscore * stat.weight
-    totalWeight += stat.weight
-  }
-
-  // VIX
-  if (data.vix !== null) {
-    const stat = INDICATOR_STATS['VIX']
-    const value = stat.invert ? -data.vix : data.vix
-    const zscore = (value - stat.mean) / stat.std
-    weightedZScore += zscore * stat.weight
-    totalWeight += stat.weight
-  }
-
-  // Initial Claims
-  if (data.initialClaims !== null) {
-    const stat = INDICATOR_STATS['Initial Claims']
-    const value = stat.invert ? -data.initialClaims.value : data.initialClaims.value
-    const zscore = (value - stat.mean) / stat.std
-    weightedZScore += zscore * stat.weight
-    totalWeight += stat.weight
-  }
-
-  // S&P vs 200MA
-  if (data.spyVs200MA !== null) {
-    const stat = INDICATOR_STATS['S&P vs 200MA']
-    const value = stat.invert ? -data.spyVs200MA.percentAbove : data.spyVs200MA.percentAbove
-    const zscore = (value - stat.mean) / stat.std
-    weightedZScore += zscore * stat.weight
-    totalWeight += stat.weight
-  }
-
-  // Yield Curve 10Y-2Y
-  if (data.yieldCurve10Y2Y !== null) {
-    const stat = INDICATOR_STATS['Yield Curve 10Y-2Y']
-    const value = stat.invert ? -data.yieldCurve10Y2Y : data.yieldCurve10Y2Y
-    const zscore = (value - stat.mean) / stat.std
-    weightedZScore += zscore * stat.weight
-    totalWeight += stat.weight
-  }
-
-  if (totalWeight === 0) return 50 // 데이터 없으면 중립
-
-  // 가중 평균 Z-score를 0-100 스케일로 변환
-  // Z-score * 10 + 50: Z=0 -> 50점, Z=1 -> 60점, Z=2 -> 70점
-  const avgZScore = weightedZScore / totalWeight
-  const score = avgZScore * 10 + 50
-  return Math.max(0, Math.min(100, score))
+  return calculateCompositeScore({
+    hySpread: data.highYieldSpread,
+    vix: data.vix,
+    initialClaims: data.initialClaims?.value ?? null,
+    spyVs200MA: data.spyVs200MA?.percentAbove ?? null,
+    yieldCurve10Y2Y: data.yieldCurve10Y2Y,
+  })
 }
 
-// MarketHistoryRecord (DB 데이터)를 Z-score 기반으로 점수 계산
-// 순위 비교를 위해 모든 히스토리 데이터도 동일한 방식으로 계산
+// MarketHistoryRecord -> 공유 모듈용 입력으로 변환하여 Z-score 계산
 const calculateZScoreFromHistory = (record: MarketHistoryRecord): number => {
-  let weightedZScore = 0
-  let totalWeight = 0
-
-  // HY Spread
-  if (record.hy_spread !== null) {
-    const stat = INDICATOR_STATS['HY Spread']
-    const value = stat.invert ? -record.hy_spread : record.hy_spread
-    const zscore = (value - stat.mean) / stat.std
-    weightedZScore += zscore * stat.weight
-    totalWeight += stat.weight
-  }
-
-  // VIX
-  if (record.vix !== null) {
-    const stat = INDICATOR_STATS['VIX']
-    const value = stat.invert ? -record.vix : record.vix
-    const zscore = (value - stat.mean) / stat.std
-    weightedZScore += zscore * stat.weight
-    totalWeight += stat.weight
-  }
-
-  // Initial Claims
-  if (record.initial_claims !== null) {
-    const stat = INDICATOR_STATS['Initial Claims']
-    const value = stat.invert ? -record.initial_claims : record.initial_claims
-    const zscore = (value - stat.mean) / stat.std
-    weightedZScore += zscore * stat.weight
-    totalWeight += stat.weight
-  }
-
-  // S&P vs 200MA
-  if (record.spy_vs_200ma !== null) {
-    const stat = INDICATOR_STATS['S&P vs 200MA']
-    const value = stat.invert ? -record.spy_vs_200ma : record.spy_vs_200ma
-    const zscore = (value - stat.mean) / stat.std
-    weightedZScore += zscore * stat.weight
-    totalWeight += stat.weight
-  }
-
-  // Yield Curve 10Y-2Y
-  if (record.yield_curve_10y2y !== null) {
-    const stat = INDICATOR_STATS['Yield Curve 10Y-2Y']
-    const value = stat.invert ? -record.yield_curve_10y2y : record.yield_curve_10y2y
-    const zscore = (value - stat.mean) / stat.std
-    weightedZScore += zscore * stat.weight
-    totalWeight += stat.weight
-  }
-
-  if (totalWeight === 0) return 50
-
-  const avgZScore = weightedZScore / totalWeight
-  const score = avgZScore * 10 + 50
-  return Math.max(0, Math.min(100, score))
+  return calculateCompositeScore({
+    hy_spread: record.hy_spread,
+    vix: record.vix,
+    initial_claims: record.initial_claims,
+    spy_vs_200ma: record.spy_vs_200ma,
+    yield_curve_10y2y: record.yield_curve_10y2y,
+  })
 }
 
 
@@ -545,16 +434,15 @@ const calculateZScoreFromHistory = (record: MarketHistoryRecord): number => {
 // 점수가 낮을수록 = 고평가 + 탐욕 + 유동성 과잉 = 방어적 포지션
 type InvestmentStance = 'aggressive_plus' | 'aggressive' | 'moderate_aggressive' | 'neutral' | 'moderate_defensive' | 'defensive' | 'unknown'
 
-// Z-score 기반 투자 스탠스 결정
-// 50점 = 역사적 평균, 60점 = +1 std (상위 16%), 70점 = +2 std (상위 2%)
-// 40점 = -1 std (하위 16%), 30점 = -2 std (하위 2%)
+// 실제 수익률 기반 투자 스탠스 결정 (2015-2025 백테스트 검증)
+// 각 구간별 3개월 후 수익률 분석 결과를 반영
 const determineInvestmentStance = (avgScore: number): InvestmentStance => {
-  if (avgScore >= 65) return 'aggressive_plus'     // 상위 ~7% (Z > +1.5), 매우 드문 매수 기회
-  if (avgScore >= 57) return 'aggressive'          // 상위 ~25% (Z > +0.7), 통계적 매수 우위
-  if (avgScore >= 50) return 'moderate_aggressive' // 평균 이상 (Z > 0), 소폭 매수 우위
-  if (avgScore >= 43) return 'neutral'             // 평균 근처 (|Z| < 0.7), 중립
-  if (avgScore >= 35) return 'moderate_defensive'  // 하위 ~25% (Z < -0.7), 소폭 방어
-  if (avgScore >= 0) return 'defensive'            // 하위 ~7% (Z < -1.5), 방어적 비중
+  if (avgScore >= 60) return 'aggressive_plus'     // 승률 100%, 평균 +10% 이상
+  if (avgScore >= 55) return 'aggressive'          // 승률 89%, 평균 +6.5%
+  if (avgScore >= 50) return 'moderate_aggressive' // 승률 90%, 평균 +5.3%
+  if (avgScore >= 45) return 'neutral'             // 승률 51-67%, 평균 0~1%
+  if (avgScore >= 41) return 'moderate_defensive'  // 승률 58%, 평균 0%
+  if (avgScore >= 0) return 'defensive'            // 승률 8-37%, 평균 -3%
   return 'unknown'
 }
 
@@ -563,43 +451,43 @@ const getStanceInfo = (stance: InvestmentStance) => {
     aggressive_plus: {
       label: '매수 적기',
       color: '#059669',
-      description: '목돈 투자에 가장 좋은 시기입니다. 2008년 금융위기, 2020년 코로나 폭락 때와 유사한 수준으로, 10년에 2~3번 정도만 나타나는 드문 기회입니다. 과거 이런 시기에 목돈을 투자하면 3개월 후 100% 상승했고, 평균 +23% 수익을 기록했습니다.',
-      allocation: { stocks: '80-90%', bonds: '5-15%', cash: '5%' },
+      description: '목돈 투자에 가장 좋은 시기입니다. 2020년 코로나 폭락 때와 유사한 수준으로, 10년에 몇 번 나타나는 드문 기회입니다. 과거 이런 시기에 목돈을 투자하면 3개월 후 100% 상승했고, 평균 +10% 이상의 수익을 기록했습니다.',
+      allocation: { stocks: '90%', bonds: '10%', cash: '0%' },
       action: '목돈이 있다면 지금 투자를 적극 고려하세요',
     },
     aggressive: {
       label: '매수 우위',
       color: '#16a34a',
-      description: '목돈 투자에 좋은 시기입니다. 시장에 공포심이 퍼져있어 주식이 저렴한 구간입니다. 과거 이런 시기에 3개월 후 88%는 상승해 평균 +12% 수익을 거뒀고, 하락하더라도 손실폭이 작았습니다(-0.8%).',
-      allocation: { stocks: '70-80%', bonds: '15-25%', cash: '5%' },
+      description: '목돈 투자에 좋은 시기입니다. 시장에 공포심이 퍼져있어 주식이 저렴한 구간입니다. 과거 이런 시기에 3개월 후 89%는 상승해 평균 +6.5% 수익을 거뒀습니다.',
+      allocation: { stocks: '80%', bonds: '15%', cash: '5%' },
       action: '목돈 투자를 고려해볼 만한 시점입니다',
     },
     moderate_aggressive: {
       label: '소폭 매수 우위',
       color: '#22c55e',
-      description: '목돈 투자에 나쁘지 않은 시기입니다. 과거 이런 시기에 3개월 후 86%는 상승해 평균 +7% 수익을 거뒀고, 하락 시에도 손실폭이 제한적이었습니다(-2.5%). 크게 저렴하지는 않지만, 목돈을 넣어도 괜찮은 구간입니다.',
-      allocation: { stocks: '60-70%', bonds: '25-30%', cash: '5-10%' },
+      description: '목돈 투자에 나쁘지 않은 시기입니다. 과거 이런 시기에 3개월 후 90%는 상승해 평균 +5.3% 수익을 거뒀고, 하락 시에도 손실폭이 제한적이었습니다(-3.5%). 목돈을 넣어도 괜찮은 구간입니다.',
+      allocation: { stocks: '70%', bonds: '20%', cash: '10%' },
       action: '목돈은 2~3회 분할 매수를 권장합니다',
     },
     neutral: {
       label: '중립',
       color: '#f59e0b',
-      description: '목돈 투자를 서두를 필요가 없는 시기입니다. 과거 이런 시기에 3개월 후 75%는 상승했지만, 25%는 하락했습니다. 특별히 저렴하지도, 비싸지도 않아서 "지금이 기회다"라고 말하기 어렵습니다. 적립식 투자는 유지하되, 목돈은 더 좋은 기회를 기다려도 됩니다.',
-      allocation: { stocks: '50-60%', bonds: '30-35%', cash: '10-15%' },
-      action: '목돈은 3~6개월에 걸쳐 분할 매수하세요',
+      description: '목돈 투자를 서두를 필요가 없는 시기입니다. 과거 이런 시기에 3개월 후 51-67%는 상승했지만, 평균 수익은 0~1%에 불과했습니다. 동전 던지기 수준이라 "지금이 기회다"라고 말하기 어렵습니다.',
+      allocation: { stocks: '60%', bonds: '25%', cash: '15%' },
+      action: '적립식 투자는 유지하되, 목돈은 더 좋은 기회를 기다리세요',
     },
     moderate_defensive: {
       label: '소폭 방어 우위',
       color: '#f97316',
-      description: '목돈 투자에 좋지 않은 시기입니다. 과거 이런 시기에 3개월 후 67%는 상승했지만, 하락 시 평균 -7.5% 손실이 발생했습니다. 목돈을 한 번에 넣으면 손실 위험이 큽니다.',
-      allocation: { stocks: '40-50%', bonds: '35-40%', cash: '15-20%' },
+      description: '목돈 투자에 좋지 않은 시기입니다. 과거 이런 시기에 3개월 후 승률은 58%였지만 평균 수익은 0%입니다. 하락 시 -4.5% 손실이 발생했습니다.',
+      allocation: { stocks: '50%', bonds: '25%', cash: '25%' },
       action: '목돈 투자는 보류하고, 더 좋은 기회를 기다리세요',
     },
     defensive: {
       label: '방어 우위',
       color: '#ef4444',
-      description: '목돈 투자를 피해야 할 시기입니다. 과거 이런 시기에 3개월 후 84%는 상승했지만, 상승폭이 평균 +4%로 제한적이고, 하락 시 평균 -5.7% 손실이 발생했습니다. 지금 목돈을 넣으면 수익이 나도 작고, 손실이 나면 큽니다.',
-      allocation: { stocks: '30-40%', bonds: '40-45%', cash: '20-25%' },
+      description: '목돈 투자를 피해야 할 시기입니다. 과거 이런 시기에 3개월 후 승률은 8-37%로 낮았고, 평균 -3% 손실이 발생했습니다. 하락 시 -7% 이상 손실 위험이 있습니다.',
+      allocation: { stocks: '40%', bonds: '20%', cash: '40%' },
       action: '목돈은 현금으로 보유하고, 조정을 기다리세요',
     },
     unknown: {
@@ -2527,7 +2415,7 @@ const Calculator = () => {
                     const currentX = ((clampedZ - zMin) / (zMax - zMin)) * width
                     const currentY = topPadding + height - (normalPDF(clampedZ) / maxPDF) * (height - 10)
 
-                    // 누적 확률 (CDF 근사) - 현재 Z-score 기준 상위 몇 %인지
+                    // 누적 확률 (CDF 근사) - 현재 Z-score 기준 상위/하위 몇 %인지
                     const cdf = (z: number) => {
                       const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741
                       const a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911
@@ -2537,7 +2425,12 @@ const Calculator = () => {
                       const y = 1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-absZ * absZ / 2)
                       return 0.5 * (1 + sign * y)
                     }
-                    const percentile = Math.round((1 - cdf(currentZScore)) * 100)
+                    const cdfValue = cdf(currentZScore)
+                    // 점수가 높을수록 좋으므로: 상위 = 1-CDF, 하위 = CDF
+                    const isAboveMedian = currentZScore >= 0
+                    const percentileLabel = isAboveMedian
+                      ? `상위 ${Math.round((1 - cdfValue) * 100)}%`
+                      : `하위 ${Math.round(cdfValue * 100)}%`
 
                     // stance 경계 Z값들 (점수 -> Z-score 변환, 실제 std=7 기준)
                     // 65점 -> Z=2.14, 57점 -> Z=1.0, 50점 -> Z=0, 43점 -> Z=-1.0, 35점 -> Z=-2.14
@@ -2554,7 +2447,7 @@ const Calculator = () => {
                         <div className="market-distribution-header">
                           <span className="market-distribution-title">역사적 분포 내 위치</span>
                           <span className="market-distribution-stats">
-                            Z = {currentZScore >= 0 ? '+' : ''}{currentZScore.toFixed(2)} (상위 {percentile}%)
+                            Z = {currentZScore >= 0 ? '+' : ''}{currentZScore.toFixed(2)} ({percentileLabel})
                           </span>
                         </div>
                         <div className="market-normal-curve">
@@ -2844,14 +2737,14 @@ const Calculator = () => {
 
                   const periodLabels = { '1y': '1년', '3y': '3년', '5y': '5년', '10y': '10년' }
 
-                  // 구간별 정보
+                  // 구간별 정보 (실제 수익률 기반)
                   const stanceRanges: { stance: InvestmentStance; label: string; min: number; max: number; color: string }[] = [
-                    { stance: 'aggressive_plus', label: '매수 적기', min: 65, max: 100, color: '#059669' },
-                    { stance: 'aggressive', label: '매수 우위', min: 57, max: 65, color: '#16a34a' },
-                    { stance: 'moderate_aggressive', label: '소폭 매수', min: 50, max: 57, color: '#22c55e' },
-                    { stance: 'neutral', label: '중립', min: 43, max: 50, color: '#f59e0b' },
-                    { stance: 'moderate_defensive', label: '소폭 방어', min: 35, max: 43, color: '#f97316' },
-                    { stance: 'defensive', label: '방어 우위', min: 0, max: 35, color: '#ef4444' },
+                    { stance: 'aggressive_plus', label: '매수 적기', min: 60, max: 100, color: '#059669' },
+                    { stance: 'aggressive', label: '매수 우위', min: 55, max: 60, color: '#16a34a' },
+                    { stance: 'moderate_aggressive', label: '소폭 매수', min: 50, max: 55, color: '#22c55e' },
+                    { stance: 'neutral', label: '중립', min: 45, max: 50, color: '#f59e0b' },
+                    { stance: 'moderate_defensive', label: '소폭 방어', min: 41, max: 45, color: '#f97316' },
+                    { stance: 'defensive', label: '방어 우위', min: 0, max: 41, color: '#ef4444' },
                   ]
 
                   return (

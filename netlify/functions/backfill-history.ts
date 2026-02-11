@@ -1,5 +1,6 @@
 import type { Handler } from '@netlify/functions'
 import { createClient } from '@supabase/supabase-js'
+import { calculateCompositeScore } from '../../src/lib/composite-score'
 
 // FRED + Yahoo Finance API로 최대 기간 데이터를 백필하는 함수
 // 1996년부터 (HY Spread 데이터 시작) ~ 현재
@@ -277,93 +278,6 @@ async function fetchFREDHistory(
   }
 }
 
-// 점수 정규화 함수
-function normalizeScore(value: number, min: number, max: number, invert = false): number {
-  const clamped = Math.max(min, Math.min(max, value))
-  const normalized = ((clamped - min) / (max - min)) * 100
-  return invert ? 100 - normalized : normalized
-}
-
-// 종합 점수 계산 (투자 매력도 - 역발상 투자)
-// 높은 점수 = 공포/저평가 = 매수 기회
-function calculateCompositeScore(data: {
-  fearGreed: number | null
-  vix: number | null
-  spyVs200ma: number | null
-  buffettIndicator: number | null
-  fedBalanceSheetYoY: number | null
-  m2GrowthYoY: number | null
-  hySpread: number | null
-  yieldCurve10Y2Y: number | null
-  yieldCurve10Y3M: number | null
-  initialClaims: number | null
-  erp: number | null
-}): number {
-  const categories: { [key: string]: number[] } = {
-    sentiment: [],
-    valuation: [],
-    liquidity: [],
-    credit: [],
-    macro: [],
-  }
-
-  // Sentiment - 공포 = 기회 = 높은 점수
-  if (data.fearGreed !== null)
-    categories.sentiment.push(normalizeScore(data.fearGreed, 0, 100, true)) // 공포(0) = 높은 점수
-  if (data.vix !== null)
-    categories.sentiment.push(normalizeScore(data.vix, 10, 40, false)) // 높은 VIX = 공포 = 높은 점수
-
-  // Valuation - 저평가 = 기회 = 높은 점수
-  if (data.spyVs200ma !== null)
-    categories.valuation.push(normalizeScore(data.spyVs200ma, -15, 15, true)) // 200MA 아래 = 높은 점수
-  if (data.buffettIndicator !== null)
-    categories.valuation.push(normalizeScore(data.buffettIndicator, 80, 250, true)) // 저평가 = 높은 점수
-  if (data.erp !== null)
-    categories.valuation.push(normalizeScore(data.erp, -2, 6)) // ERP 높을수록 주식 매력적
-
-  // Liquidity - 긴축 중 = 향후 완화 기대 = 높은 점수
-  if (data.fedBalanceSheetYoY !== null)
-    categories.liquidity.push(normalizeScore(data.fedBalanceSheetYoY, -5, 15, true)) // 축소 = 높은 점수
-  if (data.m2GrowthYoY !== null)
-    categories.liquidity.push(normalizeScore(data.m2GrowthYoY, -5, 10, true)) // 감소 = 높은 점수
-
-  // Credit - 높은 스프레드 = 공포 = 기회
-  if (data.hySpread !== null)
-    categories.credit.push(normalizeScore(data.hySpread, 2.5, 8, false)) // 높은 스프레드 = 높은 점수
-
-  // Macro
-  if (data.yieldCurve10Y2Y !== null)
-    categories.macro.push(normalizeScore(data.yieldCurve10Y2Y, -1, 2))
-  if (data.yieldCurve10Y3M !== null)
-    categories.macro.push(normalizeScore(data.yieldCurve10Y3M, -1, 2))
-  if (data.initialClaims !== null)
-    categories.macro.push(normalizeScore(data.initialClaims, 200000, 400000, false)) // 높은 실업 = 바닥 = 높은 점수
-
-  // 카테고리별 가중치: 심리 20%, 밸류 25%, 유동성 20%, 신용 15%, 경기 20%
-  const categoryWeights: { [key: string]: number } = {
-    sentiment: 0.20,
-    valuation: 0.25,
-    liquidity: 0.20,
-    credit: 0.15,
-    macro: 0.20,
-  }
-
-  let weightedSum = 0
-  let totalWeight = 0
-
-  for (const [category, scores] of Object.entries(categories)) {
-    if (scores.length > 0) {
-      const avg = scores.reduce((a, b) => a + b, 0) / scores.length
-      const weight = categoryWeights[category] || 0
-      weightedSum += avg * weight
-      totalWeight += weight
-    }
-  }
-
-  if (totalWeight === 0) return 0
-  return Math.round((weightedSum / totalWeight) * 100) / 100
-}
-
 // YoY 계산 헬퍼
 function findYearAgoValue(
   data: FREDObservation[],
@@ -618,19 +532,13 @@ const handler: Handler = async () => {
       const schdPrice = findTickerPrice(schdData, targetDate)
       const vymPrice = findTickerPrice(vymData, targetDate)
 
-      // Composite Score
+      // Composite Score (Z-score 기반, UI와 동일한 5개 지표 사용)
       const compositeScore = calculateCompositeScore({
-        fearGreed,
-        vix,
-        spyVs200ma,
-        buffettIndicator,
-        fedBalanceSheetYoY,
-        m2GrowthYoY,
         hySpread,
-        yieldCurve10Y2Y,
-        yieldCurve10Y3M,
+        vix,
         initialClaims,
-        erp,
+        spyVs200ma,
+        yieldCurve10Y2Y,
       })
 
       // 3개월 국채 금리 (현금성 자산 수익률로 사용)

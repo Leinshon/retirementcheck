@@ -11,7 +11,7 @@ import {
 } from 'chart.js'
 import { Line } from 'react-chartjs-2'
 import annotationPlugin from 'chartjs-plugin-annotation'
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from './lib/supabase'
 import './App.css'
 import { householdFinance2025, estimatePercentiles, type AgeGroup } from './data/householdFinance2025'
 
@@ -41,11 +41,6 @@ const parseMarkdown = (text: string): string => {
     .replace(/<ul><br\/>/g, '<ul>')
     .replace(/<br\/><\/ul>/g, '</ul>')
 }
-
-// Supabase 클라이언트 설정
-const supabaseUrl = 'https://xikizeymdabgwmwfifff.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpa2l6ZXltZGFiZ3dtd2ZpZmZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxNDk5MDUsImV4cCI6MjA4MjcyNTkwNX0.uCqIK7X5ahvQ2YisEBG1O5wVcgoYv5WGPGAl_eLryP4'
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // 댓글 인터페이스
 interface Comment {

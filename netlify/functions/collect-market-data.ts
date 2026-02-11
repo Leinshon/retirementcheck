@@ -1,10 +1,12 @@
 import type { Handler, HandlerEvent } from '@netlify/functions'
 import { createClient } from '@supabase/supabase-js'
+import { calculateCompositeScore } from '../../src/lib/composite-score'
 
-// Netlify Scheduled Function - 매일 오전 9시(UTC) 실행
+// Netlify Scheduled Function - 매일 오후 10시(UTC) 실행
+// 미국 장 마감 후 + CNN Fear & Greed 마감 후 확정값 수집
 // netlify.toml에 스케줄 설정 필요:
 // [functions."collect-market-data"]
-// schedule = "0 9 * * *"
+// schedule = "0 22 * * *"
 
 interface FREDObservation {
   date: string
@@ -99,80 +101,6 @@ function calculateYoYChange(current: number, yearAgo: number): number {
   return ((current - yearAgo) / yearAgo) * 100
 }
 
-// Z-score 기반 5개 핵심 지표 통계 (10년 상관분석 기반)
-// Calculator.tsx와 동일한 방식
-const INDICATOR_STATS = {
-  'HY Spread': { mean: 4.5, std: 1.8, weight: 28.1, invert: true },
-  'VIX': { mean: 18.5, std: 7.5, weight: 25.7, invert: true },
-  'Initial Claims': { mean: 300000, std: 80000, weight: 23.5, invert: true },
-  'S&P vs 200MA': { mean: 5, std: 8, weight: 16.3, invert: true },
-  'Yield Curve 10Y-2Y': { mean: 0.5, std: 0.8, weight: 6.3, invert: false },
-}
-
-// Z-score 기반 종합 점수 계산 (Calculator와 동일)
-function calculateCompositeScore(data: {
-  vix: number | null
-  spyVs200MA: number | null
-  hySpread: number | null
-  yieldCurve10Y2Y: number | null
-  initialClaims: number | null
-}): number {
-  let weightedZScore = 0
-  let totalWeight = 0
-
-  // HY Spread
-  if (data.hySpread !== null) {
-    const stat = INDICATOR_STATS['HY Spread']
-    const value = stat.invert ? -data.hySpread : data.hySpread
-    const zscore = (value - (stat.invert ? -stat.mean : stat.mean)) / stat.std
-    weightedZScore += zscore * stat.weight
-    totalWeight += stat.weight
-  }
-
-  // VIX
-  if (data.vix !== null) {
-    const stat = INDICATOR_STATS['VIX']
-    const value = stat.invert ? -data.vix : data.vix
-    const zscore = (value - (stat.invert ? -stat.mean : stat.mean)) / stat.std
-    weightedZScore += zscore * stat.weight
-    totalWeight += stat.weight
-  }
-
-  // Initial Claims
-  if (data.initialClaims !== null) {
-    const stat = INDICATOR_STATS['Initial Claims']
-    const value = stat.invert ? -data.initialClaims : data.initialClaims
-    const zscore = (value - (stat.invert ? -stat.mean : stat.mean)) / stat.std
-    weightedZScore += zscore * stat.weight
-    totalWeight += stat.weight
-  }
-
-  // S&P vs 200MA
-  if (data.spyVs200MA !== null) {
-    const stat = INDICATOR_STATS['S&P vs 200MA']
-    const value = stat.invert ? -data.spyVs200MA : data.spyVs200MA
-    const zscore = (value - (stat.invert ? -stat.mean : stat.mean)) / stat.std
-    weightedZScore += zscore * stat.weight
-    totalWeight += stat.weight
-  }
-
-  // Yield Curve 10Y-2Y
-  if (data.yieldCurve10Y2Y !== null) {
-    const stat = INDICATOR_STATS['Yield Curve 10Y-2Y']
-    const value = stat.invert ? -data.yieldCurve10Y2Y : data.yieldCurve10Y2Y
-    const zscore = (value - (stat.invert ? -stat.mean : stat.mean)) / stat.std
-    weightedZScore += zscore * stat.weight
-    totalWeight += stat.weight
-  }
-
-  if (totalWeight === 0) return 50
-
-  // 가중 평균 Z-score를 0-100 스케일로 변환
-  const avgZScore = weightedZScore / totalWeight
-  const score = avgZScore * 10 + 50
-  return Math.round(Math.max(0, Math.min(100, score)) * 100) / 100
-}
-
 const handler: Handler = async (event: HandlerEvent) => {
   console.log('Starting market data collection...')
 
@@ -205,6 +133,23 @@ const handler: Handler = async (event: HandlerEvent) => {
       dgs2Data,
       dgs3moData,
       icsaData,
+      // 성장 지표
+      gdpGrowthData,
+      ismManufacturingData,
+      ismServicesData,
+      retailSalesData,
+      // 물가 지표
+      cpiData,
+      coreCpiData,
+      pceData,
+      corePceData,
+      ppiData,
+      // 고용 지표
+      payrollsData,
+      unemploymentData,
+      laborParticipationData,
+      // 통화정책 지표
+      dollarIndexData,
     ] = await Promise.all([
       fetchFearGreed(),
       fetchYahooQuote('^VIX'),
@@ -218,6 +163,23 @@ const handler: Handler = async (event: HandlerEvent) => {
       fetchFRED('DGS2', FRED_API_KEY, 5),
       fetchFRED('DGS3MO', FRED_API_KEY, 5),
       fetchFRED('ICSA', FRED_API_KEY, 5),
+      // 성장 지표
+      fetchFRED('A191RL1Q225SBEA', FRED_API_KEY, 5), // GDP 성장률 (QoQ, 연율화)
+      fetchFRED('MANEMP', FRED_API_KEY, 5), // 제조업 고용 (ISM 대용)
+      fetchFRED('NMFBAI', FRED_API_KEY, 5), // ISM 비제조업 지수
+      fetchFRED('RSXFS', FRED_API_KEY, 15), // 소매 판매 (YoY 계산용)
+      // 물가 지표
+      fetchFRED('CPIAUCSL', FRED_API_KEY, 15), // CPI (YoY 계산용)
+      fetchFRED('CPILFESL', FRED_API_KEY, 15), // Core CPI (YoY 계산용)
+      fetchFRED('PCEPI', FRED_API_KEY, 15), // PCE (YoY 계산용)
+      fetchFRED('PCEPILFE', FRED_API_KEY, 15), // Core PCE (YoY 계산용)
+      fetchFRED('PPIACO', FRED_API_KEY, 15), // PPI (YoY 계산용)
+      // 고용 지표
+      fetchFRED('PAYEMS', FRED_API_KEY, 3), // 비농업 고용자 수 (MoM 계산용)
+      fetchFRED('UNRATE', FRED_API_KEY, 5), // 실업률
+      fetchFRED('CIVPART', FRED_API_KEY, 5), // 경제활동참가율
+      // 통화정책 지표
+      fetchFRED('DTWEXBGS', FRED_API_KEY, 5), // 달러 인덱스
     ])
 
     // Process data
@@ -278,6 +240,100 @@ const handler: Handler = async (event: HandlerEvent) => {
       initialClaims = parseInt(icsaData[0].value)
     }
 
+    // === 성장 지표 ===
+    let gdpGrowthQoQ: number | null = null
+    if (gdpGrowthData.length > 0) {
+      gdpGrowthQoQ = Math.round(parseFloat(gdpGrowthData[0].value) * 100) / 100
+    }
+
+    let ismManufacturing: number | null = null
+    if (ismManufacturingData.length > 0) {
+      // MANEMP는 제조업 고용수치 (천명 단위), PMI 대용으로 사용
+      ismManufacturing = Math.round(parseFloat(ismManufacturingData[0].value) * 100) / 100
+    }
+
+    let ismServices: number | null = null
+    if (ismServicesData.length > 0) {
+      ismServices = Math.round(parseFloat(ismServicesData[0].value) * 100) / 100
+    }
+
+    let retailSalesYoY: number | null = null
+    if (retailSalesData.length >= 13) {
+      const current = parseFloat(retailSalesData[0].value)
+      const yearAgo = parseFloat(retailSalesData[12].value)
+      retailSalesYoY = Math.round(calculateYoYChange(current, yearAgo) * 100) / 100
+    }
+
+    // === 물가 지표 ===
+    let cpiYoY: number | null = null
+    if (cpiData.length >= 13) {
+      const current = parseFloat(cpiData[0].value)
+      const yearAgo = parseFloat(cpiData[12].value)
+      cpiYoY = Math.round(calculateYoYChange(current, yearAgo) * 100) / 100
+    }
+
+    let coreCpiYoY: number | null = null
+    if (coreCpiData.length >= 13) {
+      const current = parseFloat(coreCpiData[0].value)
+      const yearAgo = parseFloat(coreCpiData[12].value)
+      coreCpiYoY = Math.round(calculateYoYChange(current, yearAgo) * 100) / 100
+    }
+
+    let pceYoY: number | null = null
+    if (pceData.length >= 13) {
+      const current = parseFloat(pceData[0].value)
+      const yearAgo = parseFloat(pceData[12].value)
+      pceYoY = Math.round(calculateYoYChange(current, yearAgo) * 100) / 100
+    }
+
+    let corePceYoY: number | null = null
+    if (corePceData.length >= 13) {
+      const current = parseFloat(corePceData[0].value)
+      const yearAgo = parseFloat(corePceData[12].value)
+      corePceYoY = Math.round(calculateYoYChange(current, yearAgo) * 100) / 100
+    }
+
+    let ppiYoY: number | null = null
+    if (ppiData.length >= 13) {
+      const current = parseFloat(ppiData[0].value)
+      const yearAgo = parseFloat(ppiData[12].value)
+      ppiYoY = Math.round(calculateYoYChange(current, yearAgo) * 100) / 100
+    }
+
+    // === 고용 지표 ===
+    let nonfarmPayrollsMoM: number | null = null
+    if (payrollsData.length >= 2) {
+      const current = parseFloat(payrollsData[0].value)
+      const prevMonth = parseFloat(payrollsData[1].value)
+      nonfarmPayrollsMoM = Math.round((current - prevMonth) * 1000) // 천명 단위 -> 명 단위
+    }
+
+    let unemploymentRate: number | null = null
+    if (unemploymentData.length > 0) {
+      unemploymentRate = Math.round(parseFloat(unemploymentData[0].value) * 100) / 100
+    }
+
+    let laborParticipation: number | null = null
+    if (laborParticipationData.length > 0) {
+      laborParticipation = Math.round(parseFloat(laborParticipationData[0].value) * 100) / 100
+    }
+
+    // === 통화정책 지표 ===
+    let treasury10y: number | null = null
+    if (dgs10Data.length > 0) {
+      treasury10y = Math.round(parseFloat(dgs10Data[0].value) * 1000) / 1000
+    }
+
+    let treasury2y: number | null = null
+    if (dgs2Data.length > 0) {
+      treasury2y = Math.round(parseFloat(dgs2Data[0].value) * 1000) / 1000
+    }
+
+    let dollarIndex: number | null = null
+    if (dollarIndexData.length > 0) {
+      dollarIndex = Math.round(parseFloat(dollarIndexData[0].value) * 100) / 100
+    }
+
     // Calculate composite score (Z-score 기반 5개 핵심 지표)
     const compositeScore = calculateCompositeScore({
       vix,
@@ -301,6 +357,25 @@ const handler: Handler = async (event: HandlerEvent) => {
       yield_curve_10y3m: yieldCurve10Y3M,
       initial_claims: initialClaims,
       composite_score: compositeScore,
+      // 성장 지표
+      gdp_growth_qoq: gdpGrowthQoQ,
+      ism_manufacturing: ismManufacturing,
+      ism_services: ismServices,
+      retail_sales_yoy: retailSalesYoY,
+      // 물가 지표
+      cpi_yoy: cpiYoY,
+      core_cpi_yoy: coreCpiYoY,
+      pce_yoy: pceYoY,
+      core_pce_yoy: corePceYoY,
+      ppi_yoy: ppiYoY,
+      // 고용 지표
+      nonfarm_payrolls_mom: nonfarmPayrollsMoM,
+      unemployment_rate: unemploymentRate,
+      labor_participation: laborParticipation,
+      // 통화정책 지표
+      treasury_10y: treasury10y,
+      treasury_2y: treasury2y,
+      dollar_index: dollarIndex,
       raw_data: {
         fearGreed: fearGreedValue,
         vix,
@@ -312,6 +387,21 @@ const handler: Handler = async (event: HandlerEvent) => {
         yieldCurve10Y2Y,
         yieldCurve10Y3M,
         initialClaims,
+        gdpGrowthQoQ,
+        ismManufacturing,
+        ismServices,
+        retailSalesYoY,
+        cpiYoY,
+        coreCpiYoY,
+        pceYoY,
+        corePceYoY,
+        ppiYoY,
+        nonfarmPayrollsMoM,
+        unemploymentRate,
+        laborParticipation,
+        treasury10y,
+        treasury2y,
+        dollarIndex,
       },
     }
 

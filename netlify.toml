@@ -8,9 +8,16 @@
 [functions]
   directory = "netlify/functions"
 
-# 매일 오전 9시(UTC) = 한국시간 오후 6시에 시장 데이터 수집
+# 매일 오후 10시(UTC) = 한국시간 오전 7시에 시장 데이터 수집
+# 미국 장 마감(오후 4시 EST = 오후 9시 UTC) 후 1시간 뒤
+# CNN Fear & Greed 마감(오후 8시 EST = 오전 1시 UTC) 이후 확정값 수집
 [functions."collect-market-data"]
-  schedule = "0 9 * * *"
+  schedule = "0 22 * * *"
+
+# 매일 오후 10시(UTC) = 한국시간 오전 7시에 글로벌 지수 수집
+# 미국 장 마감(오후 4시 EST = 오후 9시 UTC) 후 1시간 뒤
+[functions."collect-global-indices"]
+  schedule = "0 22 * * *"
 
 [dev]
   command = "npm run dev"
