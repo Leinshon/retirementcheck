@@ -13,7 +13,6 @@ import LifecycleDemo from './LifecycleDemo.tsx'
 import ScenarioPlanning from './ScenarioPlanning.tsx'
 import DemoData from './DemoData.tsx'
 import Calculator from './Calculator.tsx'
-import Market from './Market.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -31,7 +30,6 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/b8s5l7" element={<ScenarioPlanning />} />
         <Route path="/z6a1e3" element={<DemoData />} />
         <Route path="/calculator" element={<Calculator />} />
-        <Route path="/market" element={<Market />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,
