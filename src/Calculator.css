@@ -379,6 +379,27 @@
   color: #92400e;
 }
 
+/* 차트 섹션 */
+.calc-chart-section {
+  margin-top: 28px;
+  padding-top: 28px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.calc-chart-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 16px 0;
+}
+
+.calc-chart-wrapper {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 16px 8px 8px 0;
+  margin-bottom: 28px;
+}
+
 /* DC 노트 */
 .calc-dc-note {
   margin-top: 20px;

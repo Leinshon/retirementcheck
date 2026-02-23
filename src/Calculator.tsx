@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import './Calculator.css'
 
 // 소득세율표 (2024년)
@@ -38,7 +39,7 @@ const ETF_RECOMMENDATIONS = [
 
 const Calculator = () => {
   // 탭 상태
-  const [activeTab, setActiveTab] = useState<'pension' | 'investment' | 'dc'>('pension')
+  const [activeTab, setActiveTab] = useState<'pension' | 'investment' | 'dc' | 'withdrawal'>('pension')
 
   // 연금/투자 계산 상태
   const [pensionBalance, setPensionBalance] = useState<number>(100000000)
@@ -55,6 +56,13 @@ const Calculator = () => {
   const [futureMonthlyAmount, setFutureMonthlyAmount] = useState<number>(1000000)
   const [futureReturn, setFutureReturn] = useState<number>(7)
   const [futurePeriod, setFuturePeriod] = useState<number>(10)
+
+  // 4. 인출률 계산기 상태
+  const [withdrawalBalance, setWithdrawalBalance] = useState<number>(100000000)
+  const [withdrawalRate, setWithdrawalRate] = useState<number>(4)
+  const [withdrawalReturn, setWithdrawalReturn] = useState<number>(5)
+  const [withdrawalPeriod, setWithdrawalPeriod] = useState<number>(30)
+  const [withdrawalStartAge, setWithdrawalStartAge] = useState<number>(60)
 
   // 3. DC형 퇴직연금 계산기 상태
   const [netSalary, setNetSalary] = useState<number>(4000000)
@@ -250,10 +258,67 @@ const Calculator = () => {
     }
   }
 
+  // 4. 정률 인출 계산
+  const calculateWithdrawal = () => {
+    const rate = withdrawalRate / 100
+    const returnRate = withdrawalReturn / 100
+    const n = withdrawalPeriod
+
+    const yearlyDetails = []
+    let remainingBalance = withdrawalBalance
+    let totalWithdrawn = 0
+    let totalTax = 0
+
+    for (let year = 1; year <= n; year++) {
+      const age = withdrawalStartAge + year - 1
+      const startBalance = remainingBalance
+
+      // 연초 기준 잔액의 n% 인출
+      const withdrawal = startBalance * rate
+      const afterWithdrawal = startBalance - withdrawal
+
+      // 인출 후 잔액에 대해 수익 발생
+      const interest = afterWithdrawal * returnRate
+      const endBalance = Math.max(0, afterWithdrawal + interest)
+
+      const tax = calculatePensionTax(withdrawal, age)
+      const netAmount = withdrawal - tax
+
+      totalWithdrawn += withdrawal
+      totalTax += tax
+
+      yearlyDetails.push({
+        year,
+        age,
+        startBalance: Math.round(startBalance),
+        withdrawal: Math.round(withdrawal),
+        tax: Math.round(tax),
+        netAmount: Math.round(netAmount),
+        interest: Math.round(interest),
+        endBalance: Math.round(endBalance),
+      })
+
+      remainingBalance = endBalance
+      if (remainingBalance <= 0) break
+    }
+
+    const firstYearNet = yearlyDetails.length > 0 ? yearlyDetails[0].netAmount : 0
+
+    return {
+      firstYearWithdrawal: yearlyDetails.length > 0 ? yearlyDetails[0].withdrawal : 0,
+      firstMonthlyNet: Math.round(firstYearNet / 12),
+      totalWithdrawn: Math.round(totalWithdrawn),
+      totalTax: Math.round(totalTax),
+      finalBalance: yearlyDetails.length > 0 ? yearlyDetails[yearlyDetails.length - 1].endBalance : 0,
+      yearlyDetails,
+    }
+  }
+
   const pensionResult = calculatePensionWithdrawal()
   const investResult = calculateInvestment()
   const futureResult = calculateFutureAsset()
   const dcResult = calculateDC()
+  const withdrawalResult = calculateWithdrawal()
 
   // 금액 포맷
   const formatMoney = (amount: number) => {
@@ -294,6 +359,12 @@ const Calculator = () => {
           onClick={() => setActiveTab('dc')}
         >
           DC 적립금
+        </button>
+        <button
+          className={`calc-tab ${activeTab === 'withdrawal' ? 'active' : ''}`}
+          onClick={() => setActiveTab('withdrawal')}
+        >
+          인출률 계산
         </button>
       </div>
 
@@ -743,6 +814,226 @@ const Calculator = () => {
           <div className="calc-dc-note">
             <p>* DC형 퇴직연금 적립금은 연봉의 1/12 (= 세전 월급)이 매년 적립됩니다</p>
             <p>* 실제 공제액은 부양가족 수, 비과세 항목 등에 따라 달라질 수 있습니다</p>
+          </div>
+        </div>
+      )}
+
+      {/* 4. 인출률 계산기 */}
+      {activeTab === 'withdrawal' && (
+        <div className="calc-section">
+          <h2 className="calc-section-title">인출률 기반 연금 계산기</h2>
+          <p className="calc-section-desc">매년 잔액의 일정 비율을 인출할 때 월 수령액을 계산합니다</p>
+
+          <div className="calc-inputs">
+            <div className="calc-input-group">
+              <label>총 적립금</label>
+              <div className="calc-input-row">
+                <input
+                  type="number"
+                  min={0}
+                  value={withdrawalBalance / 10000}
+                  onChange={(e) => setWithdrawalBalance((parseInt(e.target.value) || 0) * 10000)}
+                  onBlur={(e) => {
+                    const val = parseInt(e.target.value)
+                    if (!isNaN(val)) e.target.value = String(val)
+                  }}
+                />
+                <span className="calc-unit">만원</span>
+              </div>
+            </div>
+
+            <div className="calc-input-group">
+              <label>연 인출률</label>
+              <div className="calc-input-row">
+                <input
+                  type="number"
+                  step="0.5"
+                  min={0}
+                  value={withdrawalRate}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    setWithdrawalRate(val === '' ? 0 : parseFloat(val))
+                  }}
+                  onBlur={(e) => {
+                    const val = parseFloat(e.target.value)
+                    if (!isNaN(val) && Number.isInteger(val)) e.target.value = String(val)
+                  }}
+                />
+                <span className="calc-unit">%</span>
+              </div>
+            </div>
+
+            <div className="calc-input-group">
+              <label>예상 수익률 (연)</label>
+              <div className="calc-input-row">
+                <input
+                  type="number"
+                  step="0.5"
+                  min={0}
+                  value={withdrawalReturn}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    setWithdrawalReturn(val === '' ? 0 : parseFloat(val))
+                  }}
+                  onBlur={(e) => {
+                    const val = parseFloat(e.target.value)
+                    if (!isNaN(val) && Number.isInteger(val)) e.target.value = String(val)
+                  }}
+                />
+                <span className="calc-unit">%</span>
+              </div>
+            </div>
+
+            <div className="calc-input-group">
+              <label>인출 기간</label>
+              <div className="calc-input-row">
+                <input
+                  type="number"
+                  min={1}
+                  value={withdrawalPeriod}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    setWithdrawalPeriod(val === '' ? 0 : parseInt(val))
+                  }}
+                  onBlur={(e) => {
+                    const val = parseInt(e.target.value)
+                    if (!isNaN(val)) e.target.value = String(val)
+                  }}
+                />
+                <span className="calc-unit">년</span>
+              </div>
+            </div>
+
+            <div className="calc-input-group">
+              <label>인출 시작 나이</label>
+              <div className="calc-input-row">
+                <input
+                  type="number"
+                  min={0}
+                  value={withdrawalStartAge}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    setWithdrawalStartAge(val === '' ? 0 : parseInt(val))
+                  }}
+                  onBlur={(e) => {
+                    const val = parseInt(e.target.value)
+                    if (!isNaN(val)) e.target.value = String(val)
+                  }}
+                />
+                <span className="calc-unit">세</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="calc-result-summary">
+            <div className="calc-result-item highlight">
+              <span className="calc-result-label">첫해 세후 월수령액</span>
+              <span className="calc-result-value">{formatMoney(withdrawalResult.firstMonthlyNet)}</span>
+            </div>
+            <div className="calc-result-item">
+              <span className="calc-result-label">첫해 연 인출액</span>
+              <span className="calc-result-value">{formatMoney(withdrawalResult.firstYearWithdrawal)}</span>
+            </div>
+            <div className="calc-result-item">
+              <span className="calc-result-label">총 인출 합계</span>
+              <span className="calc-result-value">{formatMoney(withdrawalResult.totalWithdrawn)}</span>
+            </div>
+            <div className="calc-result-item">
+              <span className="calc-result-label">{withdrawalPeriod}년 후 잔액</span>
+              <span className="calc-result-value">{formatMoney(withdrawalResult.finalBalance)}</span>
+            </div>
+          </div>
+
+          {/* 잔액 추이 차트 */}
+          <div className="calc-chart-section">
+            <h3 className="calc-chart-title">잔액 추이</h3>
+            <div className="calc-chart-wrapper">
+              <ResponsiveContainer width="100%" height={280}>
+                <AreaChart
+                  data={withdrawalResult.yearlyDetails.map((row) => ({
+                    name: `${row.age}세`,
+                    balance: row.endBalance,
+                    withdrawal: row.netAmount,
+                  }))}
+                  margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 12, fill: '#64748b' }}
+                    interval={Math.max(0, Math.floor(withdrawalResult.yearlyDetails.length / 8) - 1)}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 12, fill: '#64748b' }}
+                    tickFormatter={(v) => v >= 100000000 ? `${(v / 100000000).toFixed(1)}억` : `${Math.round(v / 10000)}만`}
+                    width={55}
+                  />
+                  <Tooltip
+                    formatter={(value) => [formatMoney(Number(value))]}
+                    labelFormatter={(label) => `${label}`}
+                    contentStyle={{ fontSize: 13, borderRadius: 8, border: '1px solid #e2e8f0' }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="balance"
+                    name="잔액"
+                    stroke="#3b82f6"
+                    fill="#dbeafe"
+                    strokeWidth={2}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="withdrawal"
+                    name="세후 수령"
+                    stroke="#10b981"
+                    fill="#d1fae5"
+                    strokeWidth={2}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* 연도별 테이블 */}
+          <div className="calc-table-wrapper">
+            <table className="calc-table">
+              <thead>
+                <tr>
+                  <th>연차</th>
+                  <th>나이</th>
+                  <th>기초잔액</th>
+                  <th>인출금액</th>
+                  <th>연금소득세</th>
+                  <th>세후수령</th>
+                  <th>이자수익</th>
+                  <th>기말잔액</th>
+                </tr>
+              </thead>
+              <tbody>
+                {withdrawalResult.yearlyDetails.slice(0, 10).map((row) => (
+                  <tr key={row.year}>
+                    <td>{row.year}년</td>
+                    <td>{row.age}세</td>
+                    <td>{formatMoney(row.startBalance)}</td>
+                    <td>{formatMoney(row.withdrawal)}</td>
+                    <td className="tax">{formatMoney(row.tax)}</td>
+                    <td className="highlight">{formatMoney(row.netAmount)}</td>
+                    <td>{formatMoney(row.interest)}</td>
+                    <td>{formatMoney(row.endBalance)}</td>
+                  </tr>
+                ))}
+                {withdrawalResult.yearlyDetails.length > 10 && (
+                  <tr className="calc-table-more">
+                    <td colSpan={8}>... 외 {withdrawalResult.yearlyDetails.length - 10}년</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="calc-dc-note">
+            <p>* 정률 인출 방식: 매년 잔액의 {withdrawalRate}%를 인출하므로, 인출 금액이 해마다 변동합니다</p>
+            <p>* 수익률이 인출률보다 높으면 잔액이 유지되거나 증가할 수 있습니다</p>
           </div>
         </div>
       )}
