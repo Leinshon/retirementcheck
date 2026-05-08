@@ -52,10 +52,12 @@ const Calculator = () => {
   const [targetAmount, setTargetAmount] = useState<number>(100000000)
   const [investReturn, setInvestReturn] = useState<number>(7)
   const [investPeriod, setInvestPeriod] = useState<number>(10)
+  const [investPeriodUnit, setInvestPeriodUnit] = useState<'year' | 'month'>('year')
   // 미래 자산 예측 계산기 상태
   const [futureMonthlyAmount, setFutureMonthlyAmount] = useState<number>(1000000)
   const [futureReturn, setFutureReturn] = useState<number>(7)
   const [futurePeriod, setFuturePeriod] = useState<number>(10)
+  const [futurePeriodUnit, setFuturePeriodUnit] = useState<'year' | 'month'>('year')
 
   // 4. 인출률 계산기 상태
   const [withdrawalBalance, setWithdrawalBalance] = useState<number>(100000000)
@@ -119,7 +121,7 @@ const Calculator = () => {
   // 2. 적립식 투자 계산
   const calculateInvestment = () => {
     const r = investReturn / 100 / 12 // 월 수익률
-    const n = investPeriod * 12 // 총 개월 수
+    const n = investPeriodUnit === 'year' ? investPeriod * 12 : investPeriod // 총 개월 수
     const fv = targetAmount
 
     // PMT = FV * r / ((1+r)^n - 1)
@@ -150,7 +152,7 @@ const Calculator = () => {
   // 2-2. 미래 자산 예측 계산
   const calculateFutureAsset = () => {
     const r = futureReturn / 100 / 12 // 월 수익률
-    const n = futurePeriod * 12 // 총 개월 수
+    const n = futurePeriodUnit === 'year' ? futurePeriod * 12 : futurePeriod // 총 개월 수
     const pmt = futureMonthlyAmount // 월 적립금
 
     // FV = PMT * ((1+r)^n - 1) / r
@@ -586,7 +588,14 @@ const Calculator = () => {
                         if (!isNaN(val)) e.target.value = String(val)
                       }}
                     />
-                    <span className="calc-unit">년</span>
+                    <select
+                      className="calc-unit-select"
+                      value={investPeriodUnit}
+                      onChange={(e) => setInvestPeriodUnit(e.target.value as 'year' | 'month')}
+                    >
+                      <option value="year">년</option>
+                      <option value="month">개월</option>
+                    </select>
                   </div>
                 </div>
               </div>
@@ -690,7 +699,14 @@ const Calculator = () => {
                         if (!isNaN(val)) e.target.value = String(val)
                       }}
                     />
-                    <span className="calc-unit">년</span>
+                    <select
+                      className="calc-unit-select"
+                      value={futurePeriodUnit}
+                      onChange={(e) => setFuturePeriodUnit(e.target.value as 'year' | 'month')}
+                    >
+                      <option value="year">년</option>
+                      <option value="month">개월</option>
+                    </select>
                   </div>
                 </div>
               </div>
